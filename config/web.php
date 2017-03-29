@@ -70,6 +70,7 @@ $config = [
             'enableSchemaCache' => YII_ENV_PROD,
         ],
         'urlManager' => [
+            'class' => 'app\components\UrlManager',
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [

@@ -2,7 +2,7 @@
 Vue.use(VueRouter)
 
 export default new VueRouter({
-    //mode: 'history',
+    mode: 'history',
     scrollBehavior: scrollBehavior,
     routes: [
         { path: '/', component: require('./components/index.vue') },
