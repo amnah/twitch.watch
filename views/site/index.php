@@ -1,33 +1,49 @@
 <?php
 
-/** @var yii\web\View $this */
+/** @var \yii\web\View $this */
 
-$this->title = 'My Yii Application';
-
+$user = 'null'; // set as string for passing into javascript
+if (Yii::$app->user->id) {
+    $user = json_encode(Yii::$app->user->identity->toArray());
+}
 ?>
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">Welcome!</div>
+<!DOCTYPE html>
+<html lang="<?= Yii::$app->language ?>">
+<head>
+    <meta charset="<?= Yii::$app->charset ?>">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-                <div class="panel-body">
+    <title>My Company</title>
 
-                    <?php if (Yii::$app->session->has('status')): ?>
-                    <div class="alert alert-success">
-                        <?= Yii::$app->session->getFlash('status') ?>
-                    </div>
-                    <?php endif; ?>
+    <link href="<?= assetUrl("/compiled/vendor.css") ?>" rel="stylesheet">
+    <link href="<?= assetUrl("/compiled/compiled.css") ?>" rel="stylesheet">
+</head>
+<body>
+<?php $this->beginBody() ?>
+<div id="app">
+    <!-- Navbar -->
+    <navbar></navbar>
+    <!-- End Navbar -->
 
-                    <?php if (Yii::$app->user->id): ?>
-                        <p>Logged in as <?= Yii::$app->user->identity->email ?></p>
-                    <?php else: ?>
-                        <p><a href="<?= url('/auth/login') ?>">Login</a></p>
-                        <p><a href="<?= url('/auth/forgot') ?>">Forgot</a></p>
-                        <p><a href="<?= url('/auth/register') ?>">Register</a></p>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Router-view -->
+    <router-view></router-view>
+    <!-- End Router-view -->
 </div>
+
+<!-- Config -->
+<script type="text/javascript">
+    window.AppConfig = {
+        apiUrl: '/v1/',
+        csrf: '<?= Yii::$app->request->csrfToken ?>',
+        user: <?= $user ?>
+    };
+</script>
+
+<!-- Scripts -->
+<script src="<?= assetUrl("/compiled/vendor.js") ?>"></script>
+<script src="<?= assetUrl("/compiled/compiled.js") ?>"></script>
+
+<?php $this->endBody() ?>
+</body>
+</html>

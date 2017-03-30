@@ -3,8 +3,9 @@
 namespace app\components;
 
 use Yii;
+use yii\web\UrlManager as BaseUrlManager;
 
-class UrlManager extends \yii\web\UrlManager
+class UrlManager extends BaseUrlManager
 {
     /**
      * @var array Routes that should be processed through yii instead of the frontend client
@@ -19,7 +20,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @var string Frontend client route
      */
-    public $frontendRoute = "app/index";
+    public $frontendRoute = "site/index";
 
     /**
      * @inheritdoc
