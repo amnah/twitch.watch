@@ -1,45 +1,69 @@
 
-// Fonts
-@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600);
 
-// Variables
-@import "variables";
-
-body {
-  background-color: $body-bg;
-  font-family: $font-family-sans-serif;
-  font-size: $font-size-base;
-  line-height: $line-height-base;
-  color: $text-color;
+html, body {
+  background-color: black;
 }
 
-.navbar-default {
-  background-color: $navbar-default-bg;
-  border-color: $laravel-border-color;
+#menu-button {
+  position: absolute;
+  top: 85px;
+  left: 20px;
+  width: 16px;
+  height: 16px;
+  z-index: 1000;
+  opacity: 0.5;
+  cursor: pointer;
 }
 
-.panel-default {
-  border-color: $laravel-border-color;
+#stream-container {
+  position:fixed;
+  padding: 0;
+  margin: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#stream-iframe {
+  width: 100%;
+  height: 100%;
+}
+#currently-watching {
+  margin-left: 30px;
+  font-weight: bold;
 }
 
-.panel-default > .panel-heading {
-  border-color: $laravel-border-color;
-  background-color: $panel-default-heading-bg;
-}
 
-/* --------------------------------------------------------------------- */
-/* NProgress
-/* --------------------------------------------------------------------- */
-#nprogress .bar {
-  background: #00aaff;
+#stream-list {
+  display: none;
+  position: absolute;
+  top: 75px;
+  left: 10px;
+  width: 400px;
+  height: 80%;
+  overflow-y: auto;
+  z-index: 500;
+  opacity: 0.7;
+  padding: 10px;
+  color: yellow;
+  background-color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  //font-weight: bold;
 }
-#nprogress .peg {
-  box-shadow: 0 0 10px #00aaff, 0 0 5px #00aaff;
+#stream-list .close, #stream-list .refresh {
+  color: #ff9900;
 }
-#nprogress .spinner {
-  right: 10px;
+#stream-items h4, #stream-items ul {
+  margin: 5px 0;
+  padding: 0;
 }
-#nprogress .spinner-icon {
-  border-top-color: #00aaff;
-  border-left-color: #00aaff;
+#stream-items li {
+  margin-left: 25px;
+  list-style-type: none;
+}
+#stream-items .stream-item {
+  cursor: pointer;
+}
+input {
+  color: black;
 }

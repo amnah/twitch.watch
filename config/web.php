@@ -85,7 +85,7 @@ $config = [
 $debugModule = 'amnah\yii2\debug\Module';
 if (YII_ENV_DEV) {
     // configuration adjustments for 'dev' environment
-    $config['bootstrap'][] = 'debug';
+    //$config['bootstrap'][] = 'debug'; // uncomment this to show debugbar
     $config['modules']['debug'] = [
         'class' => $debugModule,
         'allowedIPs' => ['*'],

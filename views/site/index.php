@@ -14,7 +14,7 @@ if (Yii::$app->user->id) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>My Company</title>
+    <title>wt</title>
 
     <link href="<?= assetUrl("/compiled/vendor.css") ?>" rel="stylesheet">
     <link href="<?= assetUrl("/compiled/compiled.css") ?>" rel="stylesheet">
@@ -22,13 +22,7 @@ if (Yii::$app->user->id) {
 <body>
 <?php $this->beginBody() ?>
 <div id="app">
-    <!-- Navbar -->
-    <navbar></navbar>
-    <!-- End Navbar -->
-
-    <!-- Router-view -->
     <router-view></router-view>
-    <!-- End Router-view -->
 </div>
 
 <!-- Config -->
@@ -41,6 +35,7 @@ if (Yii::$app->user->id) {
 </script>
 
 <!-- Scripts -->
+<script src= "https://player.twitch.tv/js/embed/v1.js"></script>
 <script src="<?= assetUrl("/compiled/vendor.js") ?>"></script>
 <script src="<?= assetUrl("/compiled/compiled.js") ?>"></script>
 

@@ -39,7 +39,7 @@ const distPath = './web/compiled';
 // https://github.com/gulpjs/gulp/blob/master/docs/recipes/fast-browserify-builds-with-watchify.md
 // https://github.com/substack/watchify
 // -------------------------------------------------------------
-const pollInterval = 350;
+const pollInterval = 500;
 const customOpts = {
     entries: [`${assetPath}/js/main.js`],
     debug: true

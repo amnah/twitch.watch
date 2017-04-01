@@ -18,6 +18,6 @@ new Vue({
     store,
     router,
     components: {
-        navbar: require('./components/navbar.vue')
+        //navbar: require('./components/navbar.vue')
     }
 })

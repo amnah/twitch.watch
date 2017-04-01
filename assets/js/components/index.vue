@@ -1,25 +1,28 @@
 
 <template>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Welcome!</div>
-
-                    <div class="panel-body">
-
-                        <div class="alert alert-success" v-if="statusMsg">
-                            {{ statusMsg }}
-                        </div>
-
-                        <p v-if="user">Logged in as <strong>{{ user.email }}</strong></p>
-                        <p v-if="!user"><router-link to="/login">Login</router-link></p>
-                        <p v-if="!user"><router-link to="/forgot">Forgot</router-link></p>
-                        <p v-if="!user"><router-link to="/register">Register</router-link></p>
-                    </div>
-                </div>
+    <div>
+        <img id="menu-button" src="/img/menu.svg" alt="menu" @click="toggleMenu">
+        <div id="stream-list">
+            <p id="currently-watching">{{ username || '?' }}</p>
+            <div>
+                View stream (username):
+                <form role="form" @submit.prevent="pushStream(newUsername)">
+                    <input placeholder="(press enter)" v-model.trim="newUsername">
+                    <a class="close" href="javascript:void(0)">close</a>
+                </form>
             </div>
+            <!--
+            <div id="stream-refresh">Last refreshed at [ <span></span> ] <a class="refresh" href="javascript:void(0)">refresh</a></div>
+            <div><input id="stream-filter" placeholder="filter streams"></div>
+
+            <div id="stream-items"></div>
+            -->
         </div>
+
+        <main id="stream-container">
+            <div id="stream-iframe"></div>
+        </main>
+
     </div>
 </template>
 
@@ -27,18 +30,61 @@
 import {setPageTitle} from '../functions.js'
 export default {
     name: 'index',
-    created: function() {
+    mounted: function() {
         setPageTitle()
+        const vm = this
+        vm.$streamIframe = $('#stream-iframe')
+
+        // add callback for when user resizes window
+        $(window).on('resize', function() {
+            vm.player.setWidth(vm.$streamIframe.width());
+            vm.player.setHeight(vm.$streamIframe.height());
+        });
+
+        // load stream
+        if (vm.$route.params.username) {
+            vm.viewStream(vm.$route.params.username)
+        }
     },
-    computed: Vuex.mapState([
-        'user',
-        'statusMsg',
-    ]),
-    destroyed: function() {
-        // check for statusMsg before clearing it out
-        // (this prevents an unnecessary state update)
-        if (this.$store.state.statusMsg) {
-            this.$store.commit('statusMsg', null)
+    watch: {
+        $route: function(newRoute, oldRoute) {
+            // watch route to load stream
+            if (newRoute.params.username) {
+                this.viewStream(newRoute.params.username)
+            }
+        }
+    },
+    data: function() {
+        return {
+            player: null,
+            $streamIframe: null,
+            username: '',
+            newUsername: '',
+        }
+    },
+    methods: {
+        toggleMenu: function() {
+            $('#stream-list').fadeToggle('fast');
+        },
+        pushStream: function(newUsername) {
+            // let watch $route handle the stream change
+            this.$router.push(`/${newUsername}`)
+        },
+        viewStream: function(username) {
+            // create twitch player
+            if (!this.player) {
+                // get current height and width to set full screen
+                const options = {
+                    width: this.$streamIframe.width(),
+                    height: this.$streamIframe.height(),
+                    channel: username,
+                    //video: 'VIDEO_ID'
+                };
+                this.player = new Twitch.Player(this.$streamIframe.attr('id'), options);
+            }
+            this.player.setChannel(username)
+            this.username = username
+            setPageTitle(username)
         }
     }
 }

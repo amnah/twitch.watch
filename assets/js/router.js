@@ -5,7 +5,7 @@ export default new VueRouter({
     mode: 'history',
     scrollBehavior: scrollBehavior,
     routes: [
-        { path: '/', component: require('./components/index.vue') },
+        /*
         { path: '/about', component: require('./components/about.vue') },
         { path: '/contact', component: require('./components/contact.vue') },
         { path: '/login', component: require('./components/login.vue') },
@@ -14,6 +14,8 @@ export default new VueRouter({
         { path: '/forgot', component: require('./components/forgot.vue') },
         { path: '/reset', component: require('./components/reset.vue') },
         { path: '/profile', component: require('./components/profile.vue') },
+        */
+        { path: '/:username?', component: require('./components/index.vue') },
         { path: '*', component: require('./components/404.vue') },
     ]
 })
