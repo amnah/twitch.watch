@@ -50,7 +50,8 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
   //font-weight: bold;
 }
-#stream-list .close, #stream-list .refresh {
+#stream-list .close-stream, #stream-list .refresh {
+  margin-left: 15px;
   color: #ff9900;
 }
 #stream-items h4, #stream-items ul {

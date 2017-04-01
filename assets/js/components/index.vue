@@ -3,20 +3,23 @@
     <div>
         <img id="menu-button" src="/img/menu.svg" alt="menu" @click="toggleMenu">
         <div id="stream-list">
-            <p id="currently-watching">{{ username || '?' }}</p>
+            <p id="currently-watching">
+                {{ username || '?' }}
+                <a v-show="username" class="close-stream" href="javascript:void(0)" @click="closeStream">close</a>
+            </p>
             <div>
                 View stream (username):
                 <form role="form" @submit.prevent="pushStream(newUsername)">
                     <input placeholder="(press enter)" v-model.trim="newUsername">
-                    <a class="close" href="javascript:void(0)">close</a>
                 </form>
             </div>
-            <!--
-            <div id="stream-refresh">Last refreshed at [ <span></span> ] <a class="refresh" href="javascript:void(0)">refresh</a></div>
+            <div>
+                Last refreshed at [ {{ lastRefresh }} ]
+                <a class="refresh" href="javascript:void(0)">refresh</a>
+            </div>
             <div><input id="stream-filter" placeholder="filter streams"></div>
 
             <div id="stream-items"></div>
-            -->
         </div>
 
         <main id="stream-container">
@@ -51,7 +54,16 @@ export default {
             // watch route to load stream
             if (newRoute.params.username) {
                 this.viewStream(newRoute.params.username)
+                return
             }
+
+            // or close out - destroy player and update username/title
+            if (this.player) {
+                this.player.destroy()
+                this.player = null
+            }
+            this.username = ''
+            setPageTitle()
         }
     },
     data: function() {
@@ -69,6 +81,9 @@ export default {
         pushStream: function(newUsername) {
             // let watch $route handle the stream change
             this.$router.push(`/${newUsername}`)
+        },
+        closeStream: function() {
+            this.$router.push('/')
         },
         viewStream: function(username) {
             // create twitch player
