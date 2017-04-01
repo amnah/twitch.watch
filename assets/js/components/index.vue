@@ -8,13 +8,13 @@
                 <a v-show="username" class="close-stream" href="javascript:void(0)" @click="closeStream">close</a>
             </p>
             <div>
-                View stream (username):
+                view stream (username):
                 <form role="form" @submit.prevent="pushStream(newUsername)">
                     <input placeholder="(press enter)" v-model.trim="newUsername">
                 </form>
             </div>
             <div>
-                Last refreshed at [ {{ lastRefresh }} ]
+                last refreshed at [ {{ lastRefresh }} ]
                 <a class="refresh" href="javascript:void(0)">refresh</a>
             </div>
             <div><input id="stream-filter" placeholder="filter streams"></div>
@@ -23,7 +23,7 @@
         </div>
 
         <main id="stream-container">
-            <div id="stream-iframe"></div>
+            <div id="stream-iframe-div"></div>
         </main>
 
     </div>
@@ -36,12 +36,12 @@ export default {
     mounted: function() {
         setPageTitle()
         const vm = this
-        vm.$streamIframe = $('#stream-iframe')
 
         // add callback for when user resizes window
+        vm.$streamIframeDiv = $('#stream-iframe-div')
         $(window).on('resize', function() {
-            vm.player.setWidth(vm.$streamIframe.width());
-            vm.player.setHeight(vm.$streamIframe.height());
+            vm.player.setWidth(vm.$streamIframeDiv.width());
+            vm.player.setHeight(vm.$streamIframeDiv.height());
         });
 
         // load stream
@@ -68,10 +68,11 @@ export default {
     },
     data: function() {
         return {
+            $streamIframeDiv: null,
             player: null,
-            $streamIframe: null,
             username: '',
             newUsername: '',
+            lastRefresh: null
         }
     },
     methods: {
@@ -86,20 +87,20 @@ export default {
             this.$router.push('/')
         },
         viewStream: function(username) {
-            // create twitch player
-            if (!this.player) {
-                // get current height and width to set full screen
-                const options = {
-                    width: this.$streamIframe.width(),
-                    height: this.$streamIframe.height(),
+            setPageTitle(username)
+            this.username = username
+
+            // set channel or create twitch player
+            if (this.player) {
+                this.player.setChannel(username)
+            } else {
+                this.player = new Twitch.Player(this.$streamIframeDiv.attr('id'), {
+                    width: this.$streamIframeDiv.width(), // get current height and width to set full screen
+                    height: this.$streamIframeDiv.height(),
                     channel: username,
                     //video: 'VIDEO_ID'
-                };
-                this.player = new Twitch.Player(this.$streamIframe.attr('id'), options);
+                })
             }
-            this.player.setChannel(username)
-            this.username = username
-            setPageTitle(username)
         }
     }
 }
