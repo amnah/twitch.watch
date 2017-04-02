@@ -38,7 +38,7 @@ html, body {
   height: 80%;
   overflow-y: auto;
   z-index: 500;
-  opacity: 0.7;
+  opacity: 0.75;
   padding: 10px;
   color: yellow;
   background-color: #333;
@@ -69,10 +69,10 @@ html, body {
 #speedrunslive h4, #stream-items ul {
   margin: 2px 0;
   padding: 0;
+  font-weight: bold;
 }
 #speedrunslive h4 {
   font-size: 14px;
-  font-weight: bold;
 }
 #stream-items {
   margin-top: 7px;

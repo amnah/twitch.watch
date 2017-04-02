@@ -11,8 +11,8 @@
             </div>
             <div id="view-direct">
                 <form role="form" @submit.prevent="pushStream(newUsername)">
-                    <input placeholder="(enter twitch username)" v-model.trim="newUsername">
-                    <a class="action" href="javascript:void(0)" @click="pushStream(newUsername)">go</a>
+                    <input placeholder="(twitch username)" v-model.trim="newUsername">
+                    <a class="action" href="javascript:void(0)" @click="pushStream()">go</a>
                 </form>
             </div>
 
@@ -88,10 +88,15 @@ export default {
             }
             $streamList.fadeToggle('fast')
         },
-        pushStream: function(newUsername) {
+        pushStream: function() {
+            // do nothing if username is empty
+            // (user must click the 'close' button to close the stream)
+            if (!this.newUsername) {
+                return
+            }
+
             // let watch $route handle the stream change
-            newUsername = newUsername || ''
-            this.$router.push(`/${newUsername}`)
+            this.$router.push(`/${this.newUsername}`)
         },
         viewStream: function(username) {
             setPageTitle(username)

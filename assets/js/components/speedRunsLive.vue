@@ -1,17 +1,16 @@
 
 <template>
     <div id="speedrunslive">
-        <input id="speedrunslive-filter" placeholder="(enter filter)" v-model="filter" @keyup="prepFilterForCompare">
+        <input id="speedrunslive-filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
         <a class="action" href="javascript:void(0)" @click="getStreams">refresh</a>
         <strong>{{ lastRefresh }}</strong>
-
 
         <div id="stream-items">
             <div v-for="(channels, game) in channelsByGame">
                 <h4 v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</h4>
                 <ul>
                     <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                        <router-link class="stream-item" :to="getChannelLink(channel)">
+                        <router-link class="stream-item" :to="'/' + channel.name" :title="channel.title">
                             [{{ channel.current_viewers }}] {{ channel.display_name }}
                         </router-link>
                     </li>
@@ -60,12 +59,6 @@ export default {
             }
             return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
         },
-        getChannelLink: function(channel) {
-            return `/${channel.name}`
-        },
-        focusFilter: function() {
-            $('#speedrunslive-filter').focus()
-        },
         getStreams: function() {
             const vm = this
             $.ajax({
@@ -73,7 +66,7 @@ export default {
             }).then(function(data) {
                 vm.lastRefresh = getTime()
                 vm.processChannelsByGame(data._source.channels)
-                vm.focusFilter()
+                $('#speedrunslive-filter').focus()
             })
         },
         processChannelsByGame: function(channels) {
