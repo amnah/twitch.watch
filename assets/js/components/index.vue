@@ -2,30 +2,27 @@
 <template>
     <div>
         <img id="menu-button" src="/img/menu.svg" alt="menu" @click="toggleMenu">
-        <div id="stream-list">
-            <p id="currently-watching">
+
+        <!-- overlay -->
+        <div id="overlay">
+            <div id="currently-watching">
                 {{ username || '?' }}
                 <a v-show="username" class="close-stream" href="javascript:void(0)" @click="closeStream">close</a>
-            </p>
+            </div>
             <div>
-                view stream (username):
+                view stream by username:
                 <form role="form" @submit.prevent="pushStream(newUsername)">
                     <input placeholder="(press enter)" v-model.trim="newUsername">
                 </form>
             </div>
-            <div>
-                last refreshed at [ {{ lastRefresh }} ]
-                <a class="refresh" href="javascript:void(0)">refresh</a>
-            </div>
-            <div><input id="stream-filter" placeholder="filter streams"></div>
 
-            <div id="stream-items"></div>
+            <speed-runs-live ref="speedRunsLive"></speed-runs-live>
         </div>
 
+        <!-- twitch player -->
         <main id="stream-container">
             <div id="stream-iframe-div"></div>
         </main>
-
     </div>
 </template>
 
@@ -33,6 +30,9 @@
 import {setPageTitle} from '../functions.js'
 export default {
     name: 'index',
+    components: {
+        speedRunsLive: require('./speedRunsLive.vue')
+    },
     mounted: function() {
         setPageTitle()
         const vm = this
@@ -71,13 +71,18 @@ export default {
             $streamIframeDiv: null,
             player: null,
             username: '',
-            newUsername: '',
-            lastRefresh: null
+            newUsername: ''
         }
     },
     methods: {
         toggleMenu: function() {
-            $('#stream-list').fadeToggle('fast');
+            // update streams from speedRunsLive streams
+            // check visibility before fadeToggle()
+            const $streamList = $('#overlay');
+            if (!$streamList.is(':visible')) {
+                this.$refs.speedRunsLive.getStreams()
+            }
+            $streamList.fadeToggle('fast');
         },
         pushStream: function(newUsername) {
             // let watch $route handle the stream change
