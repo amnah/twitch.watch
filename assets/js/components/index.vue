@@ -6,8 +6,8 @@
         <!-- overlay -->
         <div id="overlay">
             <div id="currently-watching">
-                {{ username || '?' }}
-                <router-link v-show="username" class="action" to="/">close</router-link>
+                {{ username || '(no stream)' }}
+                <a v-show="username" class="action" href="javascript:void(0)" @click="pushStream()">close</a>
             </div>
             <div id="view-direct">
                 <form role="form" @submit.prevent="pushStream(newUsername)">
@@ -41,10 +41,10 @@ export default {
         vm.$streamIframeDiv = $('#stream-iframe-div')
         $(window).on('resize', function() {
             if (vm.player) {
-                vm.player.setWidth(vm.$streamIframeDiv.width());
-                vm.player.setHeight(vm.$streamIframeDiv.height());
+                vm.player.setWidth(vm.$streamIframeDiv.width())
+                vm.player.setHeight(vm.$streamIframeDiv.height())
             }
-        });
+        })
 
         // load stream
         if (vm.$route.params.username) {
@@ -82,14 +82,15 @@ export default {
         toggleMenu: function() {
             // update streams from speedRunsLive streams
             // check visibility before fadeToggle()
-            const $streamList = $('#overlay');
+            const $streamList = $('#overlay')
             if (!$streamList.is(':visible')) {
                 this.$refs.speedRunsLive.getStreams()
             }
-            $streamList.fadeToggle('fast');
+            $streamList.fadeToggle('fast')
         },
         pushStream: function(newUsername) {
             // let watch $route handle the stream change
+            newUsername = newUsername || ''
             this.$router.push(`/${newUsername}`)
         },
         viewStream: function(username) {

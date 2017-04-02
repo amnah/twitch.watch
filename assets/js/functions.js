@@ -49,14 +49,7 @@ export function getTime() {
 // --------------------------------------------------------
 // String functions for filtering
 // --------------------------------------------------------
-
-export function checkSubstring(needle, haystack) {
-    needle = prepStringForCompare(needle)
-    haystack = prepStringForCompare(haystack)
-    return haystack.indexOf(needle) >= 0
-}
-
-function prepStringForCompare(str) {
+export function prepStringForCompare(str) {
     return removeDiacritics(str).replace(/[^a-z0-9]/gi,'').toLowerCase();
 }
 
