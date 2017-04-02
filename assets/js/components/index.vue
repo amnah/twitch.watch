@@ -7,12 +7,12 @@
         <div id="overlay">
             <div id="currently-watching">
                 {{ username || '?' }}
-                <a v-show="username" class="close-stream" href="javascript:void(0)" @click="closeStream">close</a>
+                <router-link v-show="username" class="action" to="/">close</router-link>
             </div>
-            <div>
-                view stream by username:
+            <div id="view-direct">
                 <form role="form" @submit.prevent="pushStream(newUsername)">
-                    <input placeholder="(press enter)" v-model.trim="newUsername">
+                    <input placeholder="(enter twitch username)" v-model.trim="newUsername">
+                    <a class="action" href="javascript:void(0)" @click="getStreams">go</a>
                 </form>
             </div>
 
@@ -40,13 +40,17 @@ export default {
         // add callback for when user resizes window
         vm.$streamIframeDiv = $('#stream-iframe-div')
         $(window).on('resize', function() {
-            vm.player.setWidth(vm.$streamIframeDiv.width());
-            vm.player.setHeight(vm.$streamIframeDiv.height());
+            if (vm.player) {
+                vm.player.setWidth(vm.$streamIframeDiv.width());
+                vm.player.setHeight(vm.$streamIframeDiv.height());
+            }
         });
 
         // load stream
         if (vm.$route.params.username) {
             vm.viewStream(vm.$route.params.username)
+        } else {
+            $('#overlay').show()
         }
     },
     watch: {
@@ -87,9 +91,6 @@ export default {
         pushStream: function(newUsername) {
             // let watch $route handle the stream change
             this.$router.push(`/${newUsername}`)
-        },
-        closeStream: function() {
-            this.$router.push('/')
         },
         viewStream: function(username) {
             setPageTitle(username)

@@ -1,19 +1,22 @@
 
 <template>
-    <div id="stream-items">
-        last refreshed <strong>{{ lastRefresh }}</strong>
-        <a class="refresh" href="javascript:void(0)" @click="getStreams">refresh</a>
-        <div><input id="speedrunslive-filter" placeholder="filter" v-model="filter"></div>
+    <div id="speedrunslive">
+        <input id="speedrunslive-filter" placeholder="(enter filter)" v-model="filter">
+        <a class="action" href="javascript:void(0)" @click="getStreams">refresh</a>
+        <strong>{{ lastRefresh }}</strong>
 
-        <div v-for="(channels, game) in channelsByGame">
-            <h4 v-show="showGame(game)">{{ game || '(No game set)' }}</h4>
-            <ul>
-                <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                    <router-link class="stream-item" :to="getChannelLink(channel)">
-                        [{{ channel.current_viewers }}] {{ channel.display_name }}
-                    </router-link>
-                </li>
-            </ul>
+
+        <div id="stream-items">
+            <div v-for="(channels, game) in channelsByGame">
+                <h4 v-show="showGame(game)">{{ game || '(No game set)' }}</h4>
+                <ul>
+                    <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
+                        <router-link class="stream-item" :to="getChannelLink(channel)">
+                            [{{ channel.current_viewers }}] {{ channel.display_name }}
+                        </router-link>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
@@ -53,8 +56,6 @@ export default {
             }).then(function(data) {
                 vm.lastRefresh = getTime();
                 vm.channelsByGame = vm.sortChannelsByGame(data._source.channels)
-                return data
-            }).then(function(data) {
                 vm.focusFilter()
             })
         },

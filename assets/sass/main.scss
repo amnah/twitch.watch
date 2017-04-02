@@ -6,7 +6,7 @@ html, body {
 
 #menu-button {
   position: absolute;
-  top: 85px;
+  top: 97px;
   left: 20px;
   width: 16px;
   height: 16px;
@@ -28,17 +28,11 @@ html, body {
   width: 100%;
   height: 100%;
 }
-#currently-watching {
-  margin-left: 30px;
-  font-size: 16px;
-  font-weight: bold;
-}
-
 
 #overlay {
-  //display: none;
+  display: none;
   position: absolute;
-  top: 75px;
+  top: 85px;
   left: 10px;
   width: 400px;
   height: 80%;
@@ -49,20 +43,38 @@ html, body {
   color: yellow;
   background-color: #333;
   font-family: Arial, Helvetica, sans-serif;
-  //font-weight: bold;
 }
-#overlay .close-stream, #overlay .refresh {
+#overlay .action {
   margin-left: 15px;
+  margin-right: 15px;
+  font-size: 14px;
   color: #ff9900;
   font-weight: bold;
+  text-decoration: none;
 }
-#stream-items h4, #stream-items ul {
+#currently-watching {
+  margin-left: 30px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#view-direct {
+  margin-top: 10px;
+}
+
+#speedrunslive {
+  margin-top: 7px;
+}
+#speedrunslive h4, #stream-items ul {
   margin: 2px 0;
   padding: 0;
 }
-#stream-items h4 {
+#speedrunslive h4 {
   font-size: 14px;
   font-weight: bold;
+}
+#stream-items {
+  margin-top: 7px;
 }
 #stream-items li {
   margin-left: 25px;
@@ -73,7 +85,7 @@ html, body {
   color: yellow;
   text-decoration: none;
 }
-input {
+#overlay input {
   height: 24px;
   color: black;
 }
