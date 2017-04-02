@@ -2,10 +2,6 @@
 
 /** @var \yii\web\View $this */
 
-$user = 'null'; // set as string for passing into javascript
-if (Yii::$app->user->id) {
-    $user = json_encode(Yii::$app->user->identity->toArray());
-}
 ?>
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
@@ -20,18 +16,13 @@ if (Yii::$app->user->id) {
     <link href="<?= assetUrl("/compiled/compiled.css") ?>" rel="stylesheet">
 </head>
 <body>
-<?php $this->beginBody() ?>
 <div id="app">
     <router-view></router-view>
 </div>
 
 <!-- Config -->
 <script type="text/javascript">
-    window.AppConfig = {
-        apiUrl: '/v1/',
-        csrf: '<?= Yii::$app->request->csrfToken ?>',
-        user: <?= $user ?>
-    };
+    window.AppConfig = {};
 </script>
 
 <!-- Scripts -->
@@ -39,6 +30,5 @@ if (Yii::$app->user->id) {
 <script src="<?= assetUrl("/compiled/vendor.js") ?>"></script>
 <script src="<?= assetUrl("/compiled/compiled.js") ?>"></script>
 
-<?php $this->endBody() ?>
 </body>
 </html>
