@@ -2,20 +2,35 @@
 <template>
     <div id="speedrunslive">
         <input id="speedrunslive-filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
-        <a class="action" href="javascript:void(0)" @click="getStreams">refresh</a>
+        <a class="action" href="javascript:void(0)" @click="getStreams()">refresh</a>
         <strong>{{ lastRefresh }}</strong>
 
-        <div id="stream-items">
-            <div v-for="(channels, game) in channelsByGame">
-                <h4 v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</h4>
+        <div class="sort-by">
+            <strong>Sort by:</strong>
+            <a class="action" :class="{active: sortBy == 'viewers'}" href="javascript:void(0)" @click="setSortBy('viewers')">viewers</a>
+            <a class="action" :class="{active: sortBy == 'game'}" href="javascript:void(0)" @click="setSortBy('game')">game</a>
+        </div>
+
+        <div id="speedrunslive-items">
+            <div v-if="sortBy == 'game'" v-for="(channels, game) in channelsByGame">
+                <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
                 <ul>
                     <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                        <router-link class="stream-item" :to="'/' + channel.name" :title="channel.title">
+                        <router-link class="channel channel-indented" :to="'/' + channel.name" :title="channel.title">
                             [{{ channel.current_viewers }}] {{ channel.display_name }}
                         </router-link>
                     </li>
                 </ul>
             </div>
+
+            <ul v-if="sortBy == 'viewers'">
+                <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
+                    <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
+                        [{{ channel.current_viewers }}] {{ channel.display_name }}
+                    <div class="game game-indented">{{ channel.meta_game }}</div>
+                    </router-link>
+                </li>
+            </ul>
         </div>
     </div>
 </template>
@@ -32,11 +47,17 @@ export default {
             lastRefresh: '',
             filter: '',
             filterPreppedForCompare: '',
+            sortBy: 'viewers',
             channelsByGame: {},
+            channelsByViewers: [],
             viewersByGame: {}
         }
     },
     methods: {
+        setSortBy: function(by) {
+            this.sortBy = by
+            this.focusFilter()
+        },
         prepFilterForCompare: function() {
             this.filterPreppedForCompare = prepStringForCompare(this.filter)
         },
@@ -59,6 +80,9 @@ export default {
             }
             return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
         },
+        focusFilter: function() {
+            $('#speedrunslive-filter').focus()
+        },
         getStreams: function() {
             const vm = this
             $.ajax({
@@ -66,7 +90,8 @@ export default {
             }).then(function(data) {
                 vm.lastRefresh = getTime()
                 vm.processChannelsByGame(data._source.channels)
-                $('#speedrunslive-filter').focus()
+                vm.processChannelsByViewers(data._source.channels)
+                vm.focusFilter()
             })
         },
         processChannelsByGame: function(channels) {
@@ -101,6 +126,14 @@ export default {
 
             // set data
             vm.channelsByGame = channelsByGame
+        },
+        processChannelsByViewers: function(channels) {
+            // prep string for filter comparison later
+            for (let i=0; i<channels.length; i++) {
+                const channel = channels[i]
+                channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
+            }
+            this.channelsByViewers = this.sortArray(channels, 'current_viewers').reverse()
         },
         sortArray: function(array, field) {
             // http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value/19326174#19326174

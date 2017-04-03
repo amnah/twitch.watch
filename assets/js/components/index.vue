@@ -7,10 +7,10 @@
         <div id="overlay">
             <div id="currently-watching">
                 {{ username || '(no stream)' }}
-                <a v-show="username" class="action" href="javascript:void(0)" @click="pushStream()">close</a>
+                <a v-show="username" class="action" href="javascript:void(0)" @click="closeStream()">close</a>
             </div>
             <div id="view-direct">
-                <form role="form" @submit.prevent="pushStream(newUsername)">
+                <form role="form" @submit.prevent="pushStream()">
                     <input placeholder="(twitch username)" v-model.trim="newUsername">
                     <a class="action" href="javascript:void(0)" @click="pushStream()">go</a>
                 </form>
@@ -87,6 +87,9 @@ export default {
                 this.$refs.speedRunsLive.getStreams()
             }
             $streamList.fadeToggle('fast')
+        },
+        closeStream: function() {
+            this.$router.push('/')
         },
         pushStream: function() {
             // do nothing if username is empty

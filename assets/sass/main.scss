@@ -44,14 +44,20 @@ html, body {
   background-color: #333;
   font-family: Arial, Helvetica, sans-serif;
 }
+#overlay input {
+  height: 24px;
+  color: black;
+}
 #overlay .action {
-  margin-left: 15px;
-  margin-right: 15px;
-  font-size: 14px;
+  margin-left: 10px;
+  margin-right: 5px;
   color: #ff9900;
   font-weight: bold;
   text-decoration: none;
   cursor: pointer;
+}
+#overlay .action.active {
+  text-decoration: underline;
 }
 #currently-watching {
   margin-left: 30px;
@@ -66,26 +72,29 @@ html, body {
 #speedrunslive {
   margin-top: 7px;
 }
-#speedrunslive h4, #stream-items ul {
-  margin: 2px 0;
+#speedrunslive .sort-by {
+  margin-top: 5px;
+}
+#speedrunslive-items {
+  margin-top: 7px;
+}
+#speedrunslive-items ul {
+  margin: 0;
   padding: 0;
   font-weight: bold;
 }
-#speedrunslive h4 {
-  font-size: 14px;
-}
-#stream-items {
-  margin-top: 7px;
-}
-#stream-items li {
-  margin-left: 25px;
-  list-style-type: none;
-}
-#stream-items .stream-item {
+#speedrunslive-items .channel {
   color: yellow;
   text-decoration: none;
 }
-#overlay input {
-  height: 24px;
-  color: black;
+#speedrunslive-items .channel-indented {
+  margin-left: 30px;
+}
+#speedrunslive-items .game {
+  font-size: 12px;
+  font-weight: bold;
+  color: gold;
+}
+#speedrunslive-items .game-indented {
+  margin-left: 30px;
 }
