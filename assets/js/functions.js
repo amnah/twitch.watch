@@ -40,16 +40,34 @@ export function setPageTitle(newTitle) {
 }
 
 // --------------------------------------------------------
-// Date/time functions
+// Misc helper functions
 // --------------------------------------------------------
 export function getTime() {
     return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})
 }
 
+export function sortArray(array, field) {
+    // http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value/19326174#19326174
+    // use slice() to copy the array and not just make a reference
+    let copyArray = array.slice(0)
+    copyArray.sort(function(a, b) {
+        // compare string
+        if (a[field].toLowerCase) {
+            const x = a[field].toLowerCase()
+            const y = b[field].toLowerCase()
+            return x < y ? -1 : x > y ? 1 : 0
+        }
+        // compare number
+        return a[field] - b[field]
+    })
+    return copyArray
+}
+
 // --------------------------------------------------------
-// String functions for filtering
+// Filtering functions
 // --------------------------------------------------------
 export function prepStringForCompare(str) {
+    // remove diacritics, remove all non-alphanumeric characters, and lowercase the string
     return removeDiacritics(str).replace(/[^a-z0-9]/gi,'').toLowerCase();
 }
 

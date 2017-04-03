@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import {getTime, prepStringForCompare} from '../functions.js'
+import {getTime, sortArray, prepStringForCompare} from '../functions.js'
 export default {
     name: 'speedRunsLive',
     mounted: function() {
@@ -88,9 +88,22 @@ export default {
             $.ajax({
                 url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
+                // prep channels for filter comparison
+                let channels = data._source.channels
+                for (let i=0; i<channels.length; i++) {
+                    const channel = channels[i]
+                    channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
+                }
+
+                // sort by viewers desc
+                channels = sortArray(channels, 'current_viewers').reverse()
+                vm.channelsByViewers = channels
+
+                // sort by games
+                vm.processChannelsByGame(channels)
+
+                // update refresh time and focus on the filter
                 vm.lastRefresh = getTime()
-                vm.processChannelsByGame(data._source.channels)
-                vm.processChannelsByViewers(data._source.channels)
                 vm.focusFilter()
             })
         },
@@ -98,26 +111,17 @@ export default {
             // sort channels by game
             const vm = this
             let channelsByGame = {}
-            channels = vm.sortArray(channels, 'meta_game')
+            channels = sortArray(channels, 'meta_game')
             for (let i=0; i<channels.length; i++) {
-                // prep string for filter comparison later
                 const channel = channels[i]
-                channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
-
-                // create array for this game if needed
                 channelsByGame[channel.meta_game] = channelsByGame[channel.meta_game] || []
                 channelsByGame[channel.meta_game].push(channel)
             }
 
-            // sort channels by viewers desc
+            // count number of viewers
             for (let game in channelsByGame) {
-                let channels = channelsByGame[game]
-                channels = vm.sortArray(channels, 'current_viewers')
-                channels = channels.reverse()
-                channelsByGame[game] = channels
-
-                // count total viewers while we're at it
                 let numViewers = 0
+                const channels = channelsByGame[game]
                 for (let i=0; i<channels.length; i++) {
                     numViewers += channels[i].current_viewers
                 }
@@ -126,30 +130,6 @@ export default {
 
             // set data
             vm.channelsByGame = channelsByGame
-        },
-        processChannelsByViewers: function(channels) {
-            // prep string for filter comparison later
-            for (let i=0; i<channels.length; i++) {
-                const channel = channels[i]
-                channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
-            }
-            this.channelsByViewers = this.sortArray(channels, 'current_viewers').reverse()
-        },
-        sortArray: function(array, field) {
-            // http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value/19326174#19326174
-            // use slice() to copy the array and not just make a reference
-            let copyArray = array.slice(0)
-            copyArray.sort(function(a, b) {
-                // compare string
-                if (a[field].toLowerCase) {
-                    const x = a[field].toLowerCase()
-                    const y = b[field].toLowerCase()
-                    return x < y ? -1 : x > y ? 1 : 0
-                }
-                // compare number
-                return a[field] - b[field]
-            })
-            return copyArray
         }
     }
 }
