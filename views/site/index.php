@@ -27,7 +27,7 @@
 </script>
 
 <!-- Scripts -->
-<script src= "https://player.twitch.tv/js/embed/v1.js"></script>
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
 <script src="<?= assetUrl("/compiled/vendor.js") ?>"></script>
 <script src="<?= assetUrl("/compiled/compiled.js") ?>"></script>
 

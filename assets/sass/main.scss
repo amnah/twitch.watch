@@ -6,12 +6,12 @@ html, body {
 
 #menu-button {
   position: absolute;
-  top: 97px;
-  left: 20px;
-  width: 16px;
-  height: 16px;
+  top: 93px;
+  left: 18px;
+  width: 24px;
+  height: 24px;
   z-index: 1000;
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: pointer;
 }
 
@@ -40,7 +40,7 @@ html, body {
   opacity: 0.75;
   padding: 10px;
   color: yellow;
-  background-color: #333;
+  background-color: rgba(51,51,51,.65);
   font-family: Arial, Helvetica, sans-serif;
 }
 #overlay input {
