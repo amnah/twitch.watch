@@ -83,6 +83,8 @@ export default {
             return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
         },
         focusFilter: function() {
+            // lets not focus for now, it's annoying
+            return
             $('#speedrunslive-filter').focus()
         },
         getStreams: function() {
