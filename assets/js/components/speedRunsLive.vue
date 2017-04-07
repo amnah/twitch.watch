@@ -12,18 +12,20 @@
         </div>
 
         <div id="speedrunslive-items">
-            <div v-if="sortBy == 'game'" v-for="(channels, game) in channelsByGame">
-                <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
-                <ul>
-                    <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                        <router-link class="channel channel-indented" :to="'/' + channel.name" :title="channel.title">
-                            [{{ channel.current_viewers }}] {{ channel.display_name }}
-                        </router-link>
-                    </li>
-                </ul>
+            <div class="scroll-list" v-if="sortBy == 'game'">
+                <div v-for="(channels, game) in channelsByGame">
+                    <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
+                    <ul>
+                        <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
+                            <router-link class="channel channel-indented" :to="'/' + channel.name" :title="channel.title">
+                                [{{ channel.current_viewers }}] {{ channel.display_name }}
+                            </router-link>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
-            <ul v-if="sortBy == 'viewers'">
+            <ul class="scroll-list" v-if="sortBy == 'viewers'">
                 <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
                     <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
                         [{{ channel.current_viewers }}] {{ channel.display_name }}

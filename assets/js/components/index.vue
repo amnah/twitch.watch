@@ -38,19 +38,25 @@ export default {
         const vm = this
 
         // add callback for when user resizes window
+        vm.$overlay = $('#overlay')
         vm.$streamIframeDiv = $('#stream-iframe-div')
         $(window).on('resize', function() {
             if (vm.player) {
                 vm.player.setWidth(vm.$streamIframeDiv.width())
                 vm.player.setHeight(vm.$streamIframeDiv.height())
             }
+            if (vm.$overlay.is(':visible')) {
+                vm.resizeOverlay()
+            }
         })
 
-        // load stream
+        // load stream if we have a username, otherwise show overlay
         if (vm.$route.params.username) {
             vm.viewStream(vm.$route.params.username)
         } else {
-            $('#overlay').show()
+            vm.$overlay.fadeIn('fast', function() {
+                vm.resizeOverlay()
+            })
         }
     },
     watch: {
@@ -72,6 +78,7 @@ export default {
     },
     data: function() {
         return {
+            $overlay: null,
             $streamIframeDiv: null,
             player: null,
             username: '',
@@ -81,12 +88,30 @@ export default {
     methods: {
         toggleMenu: function() {
             // update streams from speedRunsLive streams
-            // check visibility before fadeToggle()
-            const $streamList = $('#overlay')
-            if (!$streamList.is(':visible')) {
-                this.$refs.speedRunsLive.getStreams()
+            // check visibility before fading
+            const vm = this
+            if (vm.$overlay.is(':visible')) {
+                vm.$overlay.fadeOut('fast')
+            } else {
+                vm.$refs.speedRunsLive.getStreams()
+                vm.$overlay.fadeIn('fast', function() {
+                    vm.resizeOverlay()
+                })
             }
-            $streamList.fadeToggle('fast')
+        },
+        resizeOverlay: function() {
+            // resize overlay
+            const vm = this
+            vm.$overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
+
+            // resize scroll list
+            // @link http://stackoverflow.com/questions/13075920/add-css-rule-via-jquery-for-future-created-elements/34293036#34293036
+            const $streamList = $('.scroll-list')
+            if ($streamList.length) {
+                let newHeight = $('#overlay').height() - $streamList.position().top
+                newHeight += 10 // add 10 to fill in a bit more
+                $('#force-style').html(`.scroll-list {height: ${newHeight}px !important;}`)
+            }
         },
         closeStream: function() {
             this.$router.push('/')

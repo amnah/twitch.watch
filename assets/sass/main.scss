@@ -36,7 +36,6 @@ html, body {
   left: 10px;
   width: 400px;
   height: 80%;
-  overflow-y: auto;
   z-index: 500;
   opacity: 0.75;
   padding: 10px;
@@ -59,6 +58,11 @@ html, body {
 #overlay .action.active {
   text-decoration: underline;
 }
+#overlay .scroll-list {
+  overflow-y: scroll;
+  height: 500px; // temporary! this will be changed when page loads or is resized
+}
+
 #currently-watching {
   margin-left: 30px;
   font-size: 16px;

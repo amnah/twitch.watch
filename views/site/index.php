@@ -14,6 +14,7 @@
 
     <link href="<?= assetUrl("/compiled/vendor.css") ?>" rel="stylesheet">
     <link href="<?= assetUrl("/compiled/compiled.css") ?>" rel="stylesheet">
+    <style id="force-style"></style>
 </head>
 <body>
 <div id="app">
