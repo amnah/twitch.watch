@@ -4,6 +4,10 @@ html, body {
   background-color: black;
 }
 
+
+// ---------------------------------------------------------
+// Menu button and stream containers
+// ---------------------------------------------------------
 #menu-button {
   position: absolute;
   top: 93px;
@@ -29,12 +33,15 @@ html, body {
   height: 100%;
 }
 
+// ---------------------------------------------------------
+// Generic overlay
+// ---------------------------------------------------------
 #overlay {
   display: none;
   position: absolute;
   top: 85px;
   left: 10px;
-  width: 400px;
+  width: 375px;
   height: 80%;
   z-index: 500;
   opacity: 0.75;
@@ -47,6 +54,10 @@ html, body {
   height: 24px;
   color: black;
 }
+#overlay a {
+  text-decoration: underline;
+  color: yellow;
+}
 #overlay .action {
   margin-left: 10px;
   margin-right: 5px;
@@ -56,11 +67,22 @@ html, body {
   cursor: pointer;
 }
 #overlay .action.active {
-  text-decoration: underline;
+  color: #ef6c00;
 }
 #overlay .scroll-list {
   overflow-y: scroll;
   height: 500px; // temporary! this will be changed when page loads or is resized
+}
+#overlay .indented {
+  margin-left: 30px;
+}
+
+// ---------------------------------------------------------
+// Misc common elements
+// ---------------------------------------------------------
+#change-page {
+  margin-top: 2px;
+  color: black;
 }
 
 #currently-watching {
@@ -73,6 +95,9 @@ html, body {
   margin-top: 10px;
 }
 
+// ---------------------------------------------------------
+// Speedrunslive
+// ---------------------------------------------------------
 #speedrunslive {
   margin-top: 7px;
 }
@@ -91,14 +116,8 @@ html, body {
   color: yellow;
   text-decoration: none;
 }
-#speedrunslive-items .channel-indented {
-  margin-left: 30px;
-}
 #speedrunslive-items .game {
   font-size: 12px;
   font-weight: bold;
   color: gold;
-}
-#speedrunslive-items .game-indented {
-  margin-left: 30px;
 }

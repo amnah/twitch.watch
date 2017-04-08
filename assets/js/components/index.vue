@@ -10,13 +10,20 @@
                 <a v-show="username" class="action" href="javascript:void(0)" @click="closeStream()">close</a>
             </div>
             <div id="view-direct">
+                <select id="change-page" class="pull-right" title="change page" v-model="page">
+                    <option value="srlive">srlive</option>
+                    <option value="twitch">twitch</option>
+                    <option value="history">history</option>
+                    <option value="faq">faq</option>
+                </select>
                 <form role="form" @submit.prevent="pushStream()">
                     <input placeholder="(twitch username)" v-model.trim="newUsername">
                     <a class="action" href="javascript:void(0)" @click="pushStream()">go</a>
                 </form>
             </div>
 
-            <speed-runs-live ref="speedRunsLive"></speed-runs-live>
+            <speed-runs-live v-if="page == 'srlive'" ref="speedRunsLive"></speed-runs-live>
+            <faq v-if="page == 'faq'" ref="faq"></faq>
         </div>
 
         <!-- twitch player -->
@@ -31,7 +38,8 @@ import {setPageTitle} from '../functions.js'
 export default {
     name: 'index',
     components: {
-        speedRunsLive: require('./speedRunsLive.vue')
+        speedRunsLive: require('./speedRunsLive.vue'),
+        faq: require('./faq.vue')
     },
     mounted: function() {
         setPageTitle()
@@ -82,7 +90,8 @@ export default {
             $streamIframeDiv: null,
             player: null,
             username: '',
-            newUsername: ''
+            newUsername: '',
+            page: 'srlive'
         }
     },
     methods: {
@@ -108,7 +117,7 @@ export default {
             // @link http://stackoverflow.com/questions/13075920/add-css-rule-via-jquery-for-future-created-elements/34293036#34293036
             const $streamList = $('.scroll-list')
             if ($streamList.length) {
-                let newHeight = $('#overlay').height() - $streamList.position().top
+                let newHeight = vm.$overlay.height() - $streamList.position().top
                 newHeight += 10 // add 10 to fill in a bit more
                 $('#force-style').html(`.scroll-list {height: ${newHeight}px !important;}`)
             }

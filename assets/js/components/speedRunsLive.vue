@@ -17,7 +17,7 @@
                     <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
                     <ul>
                         <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                            <router-link class="channel channel-indented" :to="'/' + channel.name" :title="channel.title">
+                            <router-link class="channel indented" :to="'/' + channel.name" :title="channel.title">
                                 [{{ channel.current_viewers }}] {{ channel.display_name }}
                             </router-link>
                         </li>
@@ -29,7 +29,7 @@
                 <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
                     <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
                         [{{ channel.current_viewers }}] {{ channel.display_name }}
-                    <div class="game game-indented">{{ channel.meta_game }}</div>
+                    <div class="game indented">{{ channel.meta_game }}</div>
                     </router-link>
                 </li>
             </ul>
