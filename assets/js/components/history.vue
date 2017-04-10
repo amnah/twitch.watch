@@ -17,7 +17,7 @@
         <div class="items">
             <ul class="scroll-list">
                 <li class="viewers" v-show="showChannel(item.username)" v-for="(item, i) in historyItems">
-                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" title="remove from history" @click="removeChannel(item.username)"></span>
+                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history`" @click="removeChannel(item.username)"></span>
                     <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
                         [{{ item.num_viewed }}] {{ item.username }}
                     <!--<div class="game indented">{{ channel.meta_game }}</div>-->
