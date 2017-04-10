@@ -211,5 +211,24 @@ export function updateHistory(username) {
     userData.num_viewed++
     userData.last_viewed = new Date().getTime()
     history[userIndex] = userData
-    history = localStorage.setItem('history', JSON.stringify(history))
+    localStorage.setItem('history', JSON.stringify(history))
+    return history
+}
+
+export function removeHistoryByUsername(username) {
+    let userIndex = -1
+    let history = getHistory()
+    for (let i=0; i<history.length; i++) {
+        if (history[i].username == username) {
+            userIndex = i
+            break
+        }
+    }
+    if (userIndex >= 0) {
+        history.splice(userIndex, 1);
+    }
+
+    // update localStorage
+    localStorage.setItem('history', JSON.stringify(history))
+    return history
 }

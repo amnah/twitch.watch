@@ -69,6 +69,9 @@ html, body {
 #overlay .action.active {
   color: #ef6c00;
 }
+#overlay .action.danger {
+  color: red;
+}
 #overlay .scroll-list {
   overflow-y: scroll;
   height: 500px; // temporary! this will be changed when page loads or is resized

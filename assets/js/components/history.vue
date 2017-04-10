@@ -16,8 +16,9 @@
         <div class="items">
             <ul class="scroll-list">
                 <li class="viewers" v-show="showChannel(item.username)" v-for="(item, i) in historyItems">
-                    <router-link class="channel indented" :to="'/' + item.username">
-                        <span title="number of views">[{{ item.num_viewed }}]</span> {{ item.username }}
+                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" title="remove from history" @click="removeChannel(item.username)"></span>
+                    <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
+                        [{{ item.num_viewed }}] {{ item.username }}
                     <!--<div class="game indented">{{ channel.meta_game }}</div>-->
                     </router-link>
                 </li>
@@ -27,7 +28,7 @@
 </template>
 
 <script>
-import {getHistory, getDisplayTime, sortArray, prepStringForCompare} from '../functions.js'
+import {sortArray, prepStringForCompare, getHistory, removeHistoryByUsername} from '../functions.js'
 export default {
     name: 'history',
     data: function() {
@@ -40,12 +41,12 @@ export default {
         }
     },
     mounted: function() {
-        this.setSortBy(this.sortBy)
+        this.getHistoryItems()
     },
     methods: {
         setSortBy: function(by) {
             this.sortBy = by
-            this.historyItems = sortArray(getHistory(), by).reverse()
+            this.getHistoryItems()
         },
         prepFilterForCompare: function() {
             this.filterPreppedForCompare = prepStringForCompare(this.filter)
@@ -56,6 +57,18 @@ export default {
             }
             return prepStringForCompare(channel).indexOf(this.filterPreppedForCompare) >= 0
         },
+        getChannelTitle: function(item) {
+            const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
+            return `${item.num_viewed} views - last viewed ${displayTime}`
+        },
+        removeChannel: function(username) {
+            console.log(`Removing channel from history [ ${username} ]`)
+            removeHistoryByUsername(username)
+            this.getHistoryItems()
+        },
+        getHistoryItems: function() {
+            this.historyItems = sortArray(getHistory(), this.sortBy).reverse()
+        }
     }
 }
 </script>
