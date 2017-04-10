@@ -9,8 +9,9 @@
 
         <div class="sort-by">
             <strong>Sort by:</strong>
-            <a class="action" :class="{active: sortBy == 'last_viewed'}" href="javascript:void(0)" @click="setSortBy('last_viewed')">last_viewed</a>
-            <a class="action" :class="{active: sortBy == 'num_viewed'}" href="javascript:void(0)" @click="setSortBy('num_viewed')">num_viewed</a>
+            <a class="action" :class="{active: sortBy == 'username'}" href="javascript:void(0)" @click="setSortBy('username')" title="sort by username">username</a>
+            <a class="action" :class="{active: sortBy == 'last_viewed'}" href="javascript:void(0)" @click="setSortBy('last_viewed')" title="sort by last time viewed">last</a>
+            <a class="action" :class="{active: sortBy == 'num_viewed'}" href="javascript:void(0)" @click="setSortBy('num_viewed')" title="sort by number of times viewed">num</a>
         </div>
 
         <div class="items">
@@ -36,7 +37,7 @@ export default {
             lastRefresh: '',
             filter: '',
             filterPreppedForCompare: '',
-            sortBy: 'last_viewed',
+            sortBy: 'username',
             historyItems: [],
         }
     },
@@ -67,7 +68,11 @@ export default {
             this.getHistoryItems()
         },
         getHistoryItems: function() {
-            this.historyItems = sortArray(getHistory(), this.sortBy).reverse()
+            let items = sortArray(getHistory(), this.sortBy)
+            if (this.sortBy != 'username') {
+                items.reverse()
+            }
+            this.historyItems = items
         }
     }
 }

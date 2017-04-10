@@ -3,7 +3,7 @@
     <div id="speedrunslive">
         <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
         <a class="action" href="javascript:void(0)" @click="getStreams()">refresh</a>
-        <strong title="last refreshed at">{{ lastRefresh }}</strong>
+        <strong class="last-refreshed" title="last refreshed at">{{ lastRefresh }}</strong>
 
         <div class="sort-by">
             <strong>Sort by:</strong>
