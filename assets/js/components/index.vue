@@ -12,9 +12,9 @@
             <div id="view-direct">
                 <select id="change-page" class="pull-right" title="change page" v-model="page">
                     <option value="srlive">srlive</option>
-                    <option value="twitch">twitch</option>
+                    <!--<option value="twitch">twitch</option>-->
                     <option value="history">history</option>
-                    <option value="faq">faq</option>
+                    <option value="about">about</option>
                 </select>
                 <form role="form" @submit.prevent="pushStream()">
                     <input placeholder="(twitch username)" v-model.trim="newUsername">
@@ -22,8 +22,9 @@
                 </form>
             </div>
 
-            <speed-runs-live v-if="page == 'srlive'" ref="speedRunsLive"></speed-runs-live>
-            <faq v-if="page == 'faq'" ref="faq"></faq>
+            <speed-runs-live v-if="page == 'srlive'" ref="srlive"></speed-runs-live>
+            <history v-if="page == 'history'" ref="history"></history>
+            <about v-if="page == 'about'" ref="about"></about>
         </div>
 
         <!-- twitch player -->
@@ -34,12 +35,23 @@
 </template>
 
 <script>
-import {setPageTitle} from '../functions.js'
+import {setPageTitle, updateHistory} from '../functions.js'
 export default {
     name: 'index',
     components: {
         speedRunsLive: require('./speedRunsLive.vue'),
-        faq: require('./faq.vue')
+        history: require('./history.vue'),
+        about: require('./about.vue')
+    },
+    data: function() {
+        return {
+            $overlay: null,
+            $streamIframeDiv: null,
+            player: null,
+            username: '',
+            newUsername: '',
+            page: 'srlive'
+        }
     },
     mounted: function() {
         setPageTitle()
@@ -84,29 +96,26 @@ export default {
             setPageTitle()
         }
     },
-    data: function() {
-        return {
-            $overlay: null,
-            $streamIframeDiv: null,
-            player: null,
-            username: '',
-            newUsername: '',
-            page: 'srlive'
-        }
-    },
     methods: {
         toggleMenu: function() {
-            // update streams from speedRunsLive streams
-            // check visibility before fading
+            // hide overlay
             const vm = this
             if (vm.$overlay.is(':visible')) {
                 vm.$overlay.fadeOut('fast')
-            } else {
-                vm.$refs.speedRunsLive.getStreams()
-                vm.$overlay.fadeIn('fast', function() {
-                    vm.resizeOverlay()
-                })
+                return
             }
+
+            // show overlay and refresh data
+            vm.$overlay.fadeIn('fast', function() {
+                vm.resizeOverlay()
+            })
+
+            // refresh data in current page
+            if (vm.$refs[vm.page] && vm.$refs[vm.page].refresh) {
+                vm.$refs[vm.page].refresh()
+            }
+
+
         },
         resizeOverlay: function() {
             // resize overlay
@@ -137,6 +146,7 @@ export default {
         },
         viewStream: function(username) {
             setPageTitle(username)
+            updateHistory(username)
             this.username = username
 
             // set channel or create twitch player

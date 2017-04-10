@@ -55,7 +55,7 @@ html, body {
   color: black;
 }
 #overlay a {
-  text-decoration: underline;
+  text-decoration: none;
   color: yellow;
 }
 #overlay .action {
@@ -76,6 +76,28 @@ html, body {
 #overlay .indented {
   margin-left: 30px;
 }
+#overlay .sort-by {
+  margin-top: 5px;
+}
+#overlay .items {
+  margin-top: 7px;
+}
+#overlay .items ul {
+  margin: 0;
+  padding: 0;
+  font-weight: bold;
+}
+#overlay .items .channel {
+  color: yellow;
+}
+#overlay .items .game {
+  font-size: 12px;
+  font-weight: bold;
+  color: gold;
+}
+#overlay .items .pull-right {
+  margin-right: 10px;
+}
 
 // ---------------------------------------------------------
 // Misc common elements
@@ -93,31 +115,9 @@ html, body {
 
 #view-direct {
   margin-top: 10px;
+  margin-bottom: 7px;
 }
 
-// ---------------------------------------------------------
-// Speedrunslive
-// ---------------------------------------------------------
-#speedrunslive {
-  margin-top: 7px;
-}
-#speedrunslive .sort-by {
-  margin-top: 5px;
-}
-#speedrunslive-items {
-  margin-top: 7px;
-}
-#speedrunslive-items ul {
-  margin: 0;
-  padding: 0;
-  font-weight: bold;
-}
-#speedrunslive-items .channel {
-  color: yellow;
-  text-decoration: none;
-}
-#speedrunslive-items .game {
-  font-size: 12px;
-  font-weight: bold;
-  color: gold;
+#about a {
+  text-decoration: underline;
 }

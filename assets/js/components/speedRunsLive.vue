@@ -1,9 +1,9 @@
 
 <template>
     <div id="speedrunslive">
-        <input id="speedrunslive-filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
+        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
         <a class="action" href="javascript:void(0)" @click="getStreams()">refresh</a>
-        <strong>{{ lastRefresh }}</strong>
+        <strong title="last refreshed at">{{ lastRefresh }}</strong>
 
         <div class="sort-by">
             <strong>Sort by:</strong>
@@ -11,14 +11,14 @@
             <a class="action" :class="{active: sortBy == 'game'}" href="javascript:void(0)" @click="setSortBy('game')">game</a>
         </div>
 
-        <div id="speedrunslive-items">
+        <div class="items">
             <div class="scroll-list" v-if="sortBy == 'game'">
                 <div v-for="(channels, game) in channelsByGame">
                     <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
                     <ul>
                         <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
                             <router-link class="channel indented" :to="'/' + channel.name" :title="channel.title">
-                                [{{ channel.current_viewers }}] {{ channel.display_name }}
+                                <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
                             </router-link>
                         </li>
                     </ul>
@@ -28,7 +28,7 @@
             <ul class="scroll-list" v-if="sortBy == 'viewers'">
                 <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
                     <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
-                        [{{ channel.current_viewers }}] {{ channel.display_name }}
+                        <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
                     <div class="game indented">{{ channel.meta_game }}</div>
                     </router-link>
                 </li>
@@ -38,12 +38,9 @@
 </template>
 
 <script>
-import {getTime, sortArray, prepStringForCompare} from '../functions.js'
+import {getDisplayTime, sortArray, prepStringForCompare} from '../functions.js'
 export default {
     name: 'speedRunsLive',
-    mounted: function() {
-        this.getStreams()
-    },
     data: function() {
         return {
             lastRefresh: '',
@@ -54,6 +51,9 @@ export default {
             channelsByViewers: [],
             viewersByGame: {}
         }
+    },
+    mounted: function() {
+        this.getStreams()
     },
     methods: {
         setSortBy: function(by) {
@@ -87,6 +87,9 @@ export default {
             return
             $('#speedrunslive-filter').focus()
         },
+        refresh: function() {
+            this.getStreams()
+        },
         getStreams: function() {
             const vm = this
             $.ajax({
@@ -107,7 +110,7 @@ export default {
                 vm.processChannelsByGame(channels)
 
                 // update refresh time and focus on the filter
-                vm.lastRefresh = getTime()
+                vm.lastRefresh = getDisplayTime()
                 vm.focusFilter()
             })
         },

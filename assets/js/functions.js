@@ -42,7 +42,7 @@ export function setPageTitle(newTitle) {
 // --------------------------------------------------------
 // Misc helper functions
 // --------------------------------------------------------
-export function getTime() {
+export function getDisplayTime() {
     return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})
 }
 
@@ -177,5 +177,39 @@ for (let i=0; i<defaultDiacriticsRemovalMap.length; i++){
     }
 }
 
+// --------------------------------------------------------
+// History functions
+// --------------------------------------------------------
+export function getHistory() {
+    // attempt to load history from localStorage
+    let history
+    try {
+        history = JSON.parse(localStorage.getItem('history'))
+    } catch (e) {}
+    history = history || []
+    return history
+}
 
+export function updateHistory(username) {
+    // get or create user data based on username
+    let userIndex = null
+    let userData = null
+    let history = getHistory()
+    for (let i=0; i<history.length; i++) {
+        if (history[i].username == username) {
+            userIndex = i
+            userData = history[i]
+            break
+        }
+    }
+    if (userIndex === null) {
+        userIndex = history.length
+        userData = {username: username, num_viewed: 0, last_viewed: null}
+    }
 
+    // update data and localStorage
+    userData.num_viewed++
+    userData.last_viewed = new Date().getTime()
+    history[userIndex] = userData
+    history = localStorage.setItem('history', JSON.stringify(history))
+}
