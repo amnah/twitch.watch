@@ -73,7 +73,7 @@ html, body {
   color: red;
 }
 #overlay .scroll-list {
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 500px; // temporary! this will be changed when page loads or is resized
 }
 #overlay .indented {
@@ -121,6 +121,9 @@ html, body {
   margin-bottom: 7px;
 }
 
+#about {
+  font-weight: bold;
+}
 #about a {
   text-decoration: underline;
 }
