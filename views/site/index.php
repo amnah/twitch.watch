@@ -17,9 +17,7 @@
     <style id="force-style"></style>
 </head>
 <body>
-<div id="app">
-    <router-view></router-view>
-</div>
+<div id="app"></div>
 
 <!-- Config -->
 <script type="text/javascript">
