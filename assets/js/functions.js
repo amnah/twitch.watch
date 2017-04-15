@@ -46,21 +46,30 @@ export function getDisplayTime() {
     return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})
 }
 
-export function sortArray(array, field) {
-    // http://stackoverflow.com/questions/1069666/sorting-javascript-object-by-property-value/19326174#19326174
-    // use slice() to copy the array and not just make a reference
-    let copyArray = array.slice(0)
-    copyArray.sort(function(a, b) {
-        // compare string
-        if (a[field].toLowerCase) {
-            const x = a[field].toLowerCase()
-            const y = b[field].toLowerCase()
-            return x < y ? -1 : x > y ? 1 : 0
-        }
-        // compare number
-        return a[field] - b[field]
-    })
-    return copyArray
+// sort by multiple fields
+// note: this is a beautiful function
+// @link http://stackoverflow.com/questions/6913512/how-to-sort-an-array-of-objects-by-multiple-fields/30446887#30446887
+export function sortArray(fields) {
+    // convert string to array
+    if($.type(fields) === "string") {
+        fields = [fields]
+    }
+    return function (a, b) {
+        return fields
+            .map(function (o) {
+                var dir = 1;
+                if (o[0] === '-') {
+                    dir = -1;
+                    o=o.substring(1);
+                }
+                if (a[o] > b[o]) return dir;
+                if (a[o] < b[o]) return -(dir);
+                return 0;
+            })
+            .reduce(function firstNonZeroValue (p,n) {
+                return p ? p : n;
+            }, 0);
+    };
 }
 
 // --------------------------------------------------------

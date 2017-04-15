@@ -105,8 +105,7 @@ export default {
                 }
 
                 // sort by viewers desc
-                channels = sortArray(channels, 'current_viewers').reverse()
-                vm.channelsByViewers = channels
+                vm.channelsByViewers = channels.sort(sortArray('-current_viewers'))
 
                 // sort by games
                 vm.processChannelsByGame(channels)
@@ -121,7 +120,8 @@ export default {
             // sort channels by game
             const vm = this
             let channelsByGame = {}
-            channels = sortArray(channels, 'meta_game')
+            channels = channels.slice() // clone array so we don't affect the original
+            channels.sort(sortArray(['meta_game', '-current_viewers']))
             for (let i=0; i<channels.length; i++) {
                 const channel = channels[i]
                 channelsByGame[channel.meta_game] = channelsByGame[channel.meta_game] || []
@@ -136,10 +136,6 @@ export default {
                     numViewers += channels[i].current_viewers
                 }
                 vm.viewersByGame[game] = numViewers
-
-                // sort by number of viewers
-                // this is a bit weird - firefox doesn't need this, but chrome does ...
-                channelsByGame[game] = sortArray(channelsByGame[game], 'current_viewers').reverse()
             }
 
             // set data

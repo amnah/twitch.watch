@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import {sortArray, sortArray2, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
+import {sortArray, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
 import {checkStreams} from '../twitchApi.js'
 export default {
     name: 'favorites',
@@ -107,8 +107,8 @@ export default {
             }
 
             // sort items
-            favoriteItems = sortArray(favoriteItems, 'username')
-            historyItems = sortArray(historyItems, this.sortHistoryBy)
+            favoriteItems.sort(sortArray('username'))
+            historyItems.sort(sortArray(this.sortHistoryBy))
             if (this.sortHistoryBy != 'username') {
                 historyItems.reverse()
             }
@@ -137,8 +137,8 @@ export default {
                     }
                 }
                 vm.liveData = liveData
-                vm.favoriteItems = sortArray(vm.addLiveData(vm.favoriteItems), 'viewers').reverse()
-                vm.historyItems = sortArray(vm.addLiveData(vm.historyItems), 'viewers').reverse()
+                vm.favoriteItems = vm.addLiveData(vm.favoriteItems).sort(sortArray(['-viewers', 'username']))
+                vm.historyItems = vm.addLiveData(vm.historyItems).sort(sortArray(['-viewers', 'username']))
                 vm.lastRefresh = getDisplayTime()
             })
         },
