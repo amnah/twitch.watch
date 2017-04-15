@@ -9,22 +9,17 @@
                 {{ username || '(no stream)' }}
                 <a v-show="username" class="action" href="javascript:void(0)" @click="closeStream()">close</a>
             </div>
-            <div id="view-direct">
-                <select id="change-page" class="pull-right" title="change page" v-model="page">
-                    <option value="srlive">srlive</option>
-                    <!--<option value="twitch">twitch</option>-->
-                    <option value="history">history</option>
-                    <option value="about">about</option>
-                </select>
-                <form role="form" @submit.prevent="pushStream()">
-                    <input placeholder="(twitch username)" v-model.trim="newUsername">
-                    <a class="action" href="javascript:void(0)" @click="pushStream()">go</a>
-                </form>
-            </div>
 
-            <speed-runs-live v-if="page == 'srlive'" ref="srlive"></speed-runs-live>
-            <history v-if="page == 'history'" ref="history"></history>
-            <about v-if="page == 'about'" ref="about"></about>
+            <ul id="navbar" class="nav nav-tabs" role="tablist">
+                <li v-for="page in pages" role="presentation" :class="{active: page == currentPage}" @click="setPage(page)">
+                    <a :aria-controls="page" role="tab">{{ page }}</a>
+                </li>
+            </ul>
+
+            <favorites v-if="currentPage == 'favorites'" ref="favorites"></favorites>
+            <twitch v-if="currentPage == 'twitch'" ref="twitch"></twitch>
+            <speed-runs-live v-if="currentPage == 'srlive'" ref="srlive"></speed-runs-live>
+            <about v-if="currentPage == 'about'" ref="about"></about>
         </div>
 
         <!-- twitch player -->
@@ -35,22 +30,23 @@
 </template>
 
 <script>
-import {setPageTitle, updateHistory} from '../functions.js'
+import {setPageTitle, updateItemByUsername} from '../functions.js'
 export default {
     name: 'index',
     components: {
+        favorites: require('./favorites.vue'),
+        twitch: require('./twitch.vue'),
         speedRunsLive: require('./speedRunsLive.vue'),
-        history: require('./history.vue'),
         about: require('./about.vue')
     },
     data: function() {
+        const pages = ['favorites', /*'twitch',*/ 'srlive', 'about']
         return {
-            $overlay: null,
             $streamIframeDiv: null,
             player: null,
             username: '',
-            newUsername: '',
-            page: 'srlive'
+            pages: pages,
+            currentPage: pages[0]
         }
     },
     mounted: function() {
@@ -58,14 +54,14 @@ export default {
         const vm = this
 
         // add callback for when user resizes window
-        vm.$overlay = $('#overlay')
+        const $overlay = $('#overlay')
         vm.$streamIframeDiv = $('#stream-iframe-div')
         $(window).on('resize', function() {
             if (vm.player) {
                 vm.player.setWidth(vm.$streamIframeDiv.width())
                 vm.player.setHeight(vm.$streamIframeDiv.height())
             }
-            if (vm.$overlay.is(':visible')) {
+            if ($overlay.is(':visible')) {
                 vm.resizeOverlay()
             }
         })
@@ -74,9 +70,7 @@ export default {
         if (vm.$route.params.username) {
             vm.viewStream(vm.$route.params.username)
         } else {
-            vm.$overlay.fadeIn('fast', function() {
-                vm.resizeOverlay()
-            })
+            $overlay.fadeIn('fast')
         }
     },
     watch: {
@@ -100,53 +94,46 @@ export default {
         toggleMenu: function() {
             // hide overlay
             const vm = this
-            if (vm.$overlay.is(':visible')) {
-                vm.$overlay.fadeOut('fast')
+            const $overlay = $('#overlay')
+            if ($overlay.is(':visible')) {
+                $overlay.fadeOut('fast')
                 return
             }
 
             // show overlay and refresh data
-            vm.$overlay.fadeIn('fast', function() {
+            $overlay.fadeIn('fast', function() {
                 vm.resizeOverlay()
             })
 
             // refresh data in current page
-            if (vm.$refs[vm.page] && vm.$refs[vm.page].refresh) {
-                vm.$refs[vm.page].refresh()
+            if (vm.$refs[vm.currentPage] && vm.$refs[vm.currentPage].refresh) {
+                vm.$refs[vm.currentPage].refresh()
             }
-
-
         },
         resizeOverlay: function() {
             // resize overlay
             const vm = this
-            vm.$overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
+            const $overlay = $('#overlay')
+            $overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
 
             // resize scroll list
             // @link http://stackoverflow.com/questions/13075920/add-css-rule-via-jquery-for-future-created-elements/34293036#34293036
             const $streamList = $('.scroll-list')
             if ($streamList.length) {
-                let newHeight = vm.$overlay.height() - $streamList.position().top
+                let newHeight = $overlay.height() - $streamList.position().top
                 newHeight += 10 // add 10 to fill in a bit more
                 $('#force-style').html(`.scroll-list {height: ${newHeight}px !important;}`)
             }
         },
+        setPage: function(page) {
+            this.currentPage = page
+        },
         closeStream: function() {
             this.$router.push('/')
         },
-        pushStream: function() {
-            // do nothing if username is empty
-            // (user must click the 'close' button to close the stream)
-            if (!this.newUsername) {
-                return
-            }
-
-            // let watch $route handle the stream change
-            this.$router.push(`/${this.newUsername}`)
-        },
         viewStream: function(username) {
             setPageTitle(username)
-            updateHistory(username)
+            updateItemByUsername(username)
             this.username = username
 
             // set channel or create twitch player

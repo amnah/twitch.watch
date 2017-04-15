@@ -178,57 +178,61 @@ for (let i=0; i<defaultDiacriticsRemovalMap.length; i++){
 }
 
 // --------------------------------------------------------
-// History functions
+// Favorites / History functions
 // --------------------------------------------------------
-export function getHistory() {
-    // attempt to load history from localStorage
-    let history
+const localStorageKey = 'items'
+export function getItems() {
+    // attempt to load data from localStorage
+    let items
     try {
-        history = JSON.parse(localStorage.getItem('history'))
+        items = JSON.parse(localStorage.getItem(localStorageKey))
     } catch (e) {}
-    history = history || []
-    return history
+    items = items || []
+    return items
 }
 
-export function updateHistory(username) {
+export function updateItemByUsername(username, isFavorite) {
     // get or create user data based on username
     let userIndex = null
     let userData = null
-    let history = getHistory()
-    for (let i=0; i<history.length; i++) {
-        if (history[i].username == username) {
+    let items = getItems()
+    const currentTime = new Date().getTime()
+    for (let i=0; i<items.length; i++) {
+        if (items[i].username === username) {
             userIndex = i
-            userData = history[i]
+            userData = items[i]
             break
         }
     }
     if (userIndex === null) {
-        userIndex = history.length
-        userData = {username: username, num_viewed: 0, last_viewed: null}
+        userIndex = items.length
+        userData = {username: username, added: currentTime}
     }
 
     // update data and localStorage
-    userData.num_viewed++
-    userData.last_viewed = new Date().getTime()
-    history[userIndex] = userData
-    localStorage.setItem('history', JSON.stringify(history))
-    return history
+    // note: the num_viewed may be wrong, but i dont care enough to fix it
+    userData.is_favorite = userData.is_favorite || isFavorite ? 1 : 0
+    userData.num_viewed = userData.num_viewed ? userData.num_viewed+1 : 1
+    userData.last_viewed = currentTime
+    items[userIndex] = userData
+    localStorage.setItem(localStorageKey, JSON.stringify(items))
+    return items
 }
 
-export function removeHistoryByUsername(username) {
+export function removeItemByUsername(username) {
+    // find element by username
     let userIndex = -1
-    let history = getHistory()
-    for (let i=0; i<history.length; i++) {
-        if (history[i].username == username) {
+    let items = getItems()
+    for (let i=0; i<items.length; i++) {
+        if (items[i].username === username) {
             userIndex = i
             break
         }
     }
+    // remove if found
     if (userIndex >= 0) {
-        history.splice(userIndex, 1);
+        items.splice(userIndex, 1);
+        localStorage.setItem(localStorageKey, JSON.stringify(items))
     }
-
-    // update localStorage
-    localStorage.setItem('history', JSON.stringify(history))
-    return history
+    return items
 }

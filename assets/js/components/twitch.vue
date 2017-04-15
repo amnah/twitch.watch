@@ -2,10 +2,8 @@
 <template>
     <div id="speedrunslive">
         <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
-        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getStreams()">
-            {{ lastRefresh }}
-            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-        </span>
+        <a class="action" href="javascript:void(0)" @click="getStreams()">refresh</a>
+        <strong class="last-refreshed" title="last refreshed at">{{ lastRefresh }}</strong>
 
         <div class="sort-by">
             <strong>Sort by:</strong>
@@ -41,8 +39,9 @@
 
 <script>
 import {getDisplayTime, sortArray, prepStringForCompare} from '../functions.js'
+import twitchApi from '../twitchApi.js'
 export default {
-    name: 'speedRunsLive',
+    name: 'twitch',
     data: function() {
         return {
             lastRefresh: '',
@@ -56,6 +55,19 @@ export default {
     },
     mounted: function() {
         this.getStreams()
+
+        twitchApi.get('games/top', {offset: 0, limit: 100}).then(function(data) {
+            console.log('0', data)
+        })
+//        twitchApi.get('games/top', {offset: 100, limit: 100}).then(function(data) {
+//            console.log('1', data)
+//        })
+//        twitchApi.get('games/top', {offset: 200, limit: 100}).then(function(data) {
+//            console.log('2', data)
+//        })
+        // games/top?offset="+offset+"&limit=25
+        // streams?game="+game+"&offset="+offset+"&limit=25", # need to urlencode
+        // /search/streams?q="+searchText # channel names???
     },
     methods: {
         setSortBy: function(by) {
@@ -95,7 +107,7 @@ export default {
         getStreams: function() {
             const vm = this
             $.ajax({
-                url: 'http://api.speedrunslive.com/frontend/streams'
+                url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
                 // prep channels for filter comparison
                 let channels = data._source.channels
@@ -114,7 +126,6 @@ export default {
                 // update refresh time and focus on the filter
                 vm.lastRefresh = getDisplayTime()
                 vm.focusFilter()
-                vm.$parent.$options.methods.resizeOverlay()
             })
         },
         processChannelsByGame: function(channels) {
@@ -128,7 +139,7 @@ export default {
                 channelsByGame[channel.meta_game].push(channel)
             }
 
-            // count and sort number of viewers
+            // count number of viewers
             for (let game in channelsByGame) {
                 let numViewers = 0
                 const channels = channelsByGame[game]
@@ -136,10 +147,6 @@ export default {
                     numViewers += channels[i].current_viewers
                 }
                 vm.viewersByGame[game] = numViewers
-
-                // sort by number of viewers
-                // this is a bit weird - firefox doesn't need this, but chrome does ...
-                channelsByGame[game] = sortArray(channelsByGame[game], 'current_viewers').reverse()
             }
 
             // set data

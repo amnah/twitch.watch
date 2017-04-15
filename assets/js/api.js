@@ -29,8 +29,7 @@ export function process(vm, data) {
 // --------------------------------------------------------
 // Ajax shortcuts
 // --------------------------------------------------------
-export {get}
-function get(url, data) {
+export function get(url, data) {
     const params = $.extend(defaultConfig(), {
         url: getConfig('apiUrl') + url,
         method: 'GET',
