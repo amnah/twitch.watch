@@ -16,7 +16,7 @@ export default new VueRouter({
         { path: '/profile', component: require('./components/profile.vue') },
         */
         { path: '/:username?', component: require('./components/index.vue') },
-        { path: '*', component: require('./components/404.vue') },
+        { path: '*', redirect: '/' }
     ]
 })
 
