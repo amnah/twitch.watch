@@ -59,7 +59,7 @@ export function arrayPluck(array, field) {
 // @link http://stackoverflow.com/questions/6913512/how-to-sort-an-array-of-objects-by-multiple-fields/30446887#30446887
 export function sortArray(fields) {
     // convert string to array
-    if ($.type(fields) === 'string') {
+    if (fields.split) {
         fields = [fields]
     }
     return function (a, b) {

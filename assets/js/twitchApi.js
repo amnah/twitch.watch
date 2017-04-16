@@ -43,7 +43,7 @@ export function getTwitch(url, data) {
 
 export function checkStreams(usernames) {
     // ensure array
-    if ($.type(usernames) === 'string') {
+    if (usernames.split) {
         usernames = usernames.split(',')
     }
 
