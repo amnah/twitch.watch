@@ -72,6 +72,17 @@ export function sortArray(fields) {
     };
 }
 
+// group array by specified field
+// note: this returns an object, not an array
+export function groupArrayByField(array, field) {
+    const groupedItems = {}
+    for (let i=0; i<array.length; i++) {
+        const item = array[i]
+        groupedItems[item[field]] = groupedItems[item[field]] || []
+        groupedItems[item[field]].push(item)
+    }
+    return groupedItems
+}
 // --------------------------------------------------------
 // Filtering functions
 // --------------------------------------------------------

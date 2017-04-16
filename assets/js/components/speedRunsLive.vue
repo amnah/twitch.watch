@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import {getDisplayTime, sortArray, prepStringForCompare} from '../functions.js'
+import {getDisplayTime, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
 export default {
     name: 'speedRunsLive',
     data: function() {
@@ -119,16 +119,11 @@ export default {
         processChannelsByGame: function(channels) {
             // sort channels by game
             const vm = this
-            let channelsByGame = {}
             channels = channels.slice() // clone array so we don't affect the original
             channels.sort(sortArray(['meta_game', '-current_viewers']))
-            for (let i=0; i<channels.length; i++) {
-                const channel = channels[i]
-                channelsByGame[channel.meta_game] = channelsByGame[channel.meta_game] || []
-                channelsByGame[channel.meta_game].push(channel)
-            }
+            const channelsByGame = groupArrayByField(channels, 'meta_game')
 
-            // count and sort number of viewers
+            // count number of viewers
             for (let game in channelsByGame) {
                 let numViewers = 0
                 const channels = channelsByGame[game]

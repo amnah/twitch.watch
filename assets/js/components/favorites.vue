@@ -16,8 +16,21 @@
         -->
 
         <div class="items scroll-list">
+            <div v-for="(items, game) in favoriteItemsGrouped">
+                <div class="game">{{ game }}</div>
+                <ul>
+                    <li v-for="item in items">
+                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
+                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
+                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        </router-link>
+                    </li>
+                </ul>
+            </div>
+
+            <!--
             <ul>
-                <li class="viewers" v-for="(item, i) in favoriteItems">
+                <li v-for="(item, i) in favoriteItems">
                     <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
                         {{ getViewers(item) }} {{ item.display_name || item.username }}
@@ -25,10 +38,11 @@
                     <div v-if="item.viewers >= 0" class="game indented">{{ item.game }}</div>
                 </li>
             </ul>
+            -->
 
-            <h4>&raquo; History</h4>
+            <p class="action"><br/>show history</p>
             <ul>
-                <li class="viewers" v-for="(item, i) in historyItems">
+                <li v-for="(item, i) in historyItems">
                     <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history`" @click="removeItem(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
                         {{ getViewers(item) }} {{ item.display_name || item.username }}
@@ -41,7 +55,7 @@
 </template>
 
 <script>
-import {sortArray, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
+import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
 import {checkStreams} from '../twitchApi.js'
 export default {
     name: 'favorites',
@@ -49,6 +63,7 @@ export default {
         return {
             newUsername: '',
             lastRefresh: '',
+            favoriteItemsGrouped: {},
             favoriteItems: [],
             historyItems: [],
             liveData: {}
@@ -132,6 +147,11 @@ export default {
 
                 // update items and sort
                 vm.favoriteItems = vm.addLiveData(vm.favoriteItems).sort(sortArray(['-viewers', 'username']))
+                let favoriteItemsGrouped = groupArrayByField(vm.favoriteItems.slice().sort(sortArray(['game', '-viewers'])), 'game')
+                const tmp = favoriteItemsGrouped['']
+                delete favoriteItemsGrouped['']
+                favoriteItemsGrouped['offline'] = tmp
+                vm.favoriteItemsGrouped = favoriteItemsGrouped
                 vm.historyItems = vm.addLiveData(vm.historyItems).sort(sortArray(['-viewers', '-last_viewed']))
                 vm.lastRefresh = getDisplayTime()
                 vm.$parent.$options.methods.resizeOverlay()
