@@ -95,7 +95,7 @@ export default {
         getStreams: function() {
             const vm = this
             $.ajax({
-                url: 'http://api.speedrunslive.com/frontend/streams'
+                url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
                 // prep channels for filter comparison
                 let channels = data._source.channels
