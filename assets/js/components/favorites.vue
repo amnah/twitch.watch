@@ -43,7 +43,8 @@
             <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
             <ul v-show="showHistory">
                 <li v-for="(item, i) in historyItems">
-                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history`" @click="removeItem(item.username)"></span>
+                    <span class="action danger glyphicon glyphicon-remove-circle pull-right" aria-hidden="true" :title="`remove [${item.username}] from history (PERMANENT)`" @click="removeItem(item.username)"></span>
+                    <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
                         {{ getViewers(item) }} {{ item.display_name || item.username }}
                     </router-link>
@@ -74,11 +75,21 @@ export default {
         this.getAndDisplayItems()
     },
     methods: {
-        addFavorite: function() {
-            // ensure that we have a proper username, lowercase alphanumerics only
-            // then separate by comma
+        addFavorite: function(username) {
+
+            // get username from function parameter or text input
+            let usernames = username
+            if (!usernames) {
+                usernames = this.newUsername
+                this.newUsername = ''
+            }
+
+            // ensure that we have a proper username - lowercase alphanumerics only + underscore
+            // then separate by comma for batch processing
+            usernames = usernames.replace(/[^a-z0-9_,]/gi,'').toLowerCase().split(',')
+
+            // add usernames and update list
             let items
-            let usernames = this.newUsername.replace(/[^a-z0-9_,]/gi,'').toLowerCase().split(',')
             for (let i=0; i<usernames.length; i++) {
                 // check for username
                 if (usernames[i]) {
@@ -86,7 +97,6 @@ export default {
                 }
             }
             this.getAndDisplayItems(items)
-            this.newUsername = ''
         },
         getChannelTitle: function(item) {
             const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})

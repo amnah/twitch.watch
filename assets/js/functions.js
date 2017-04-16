@@ -249,9 +249,13 @@ export function removeItemByUsername(username) {
             break
         }
     }
-    // remove if found
     if (userIndex >= 0) {
-        items.splice(userIndex, 1);
+        // unfavorite or remove from history
+        if (items[userIndex].is_favorite) {
+            items[userIndex].is_favorite = 0
+        } else {
+            items.splice(userIndex, 1);
+        }
         localStorage.setItem(localStorageKey, JSON.stringify(items))
     }
     return items
