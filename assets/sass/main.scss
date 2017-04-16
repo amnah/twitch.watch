@@ -72,6 +72,10 @@ html, body {
 #overlay .action.danger {
   color: red;
 }
+#overlay .items .action.pull-right {
+  margin-right: 5px;
+  margin-left: 0;
+}
 #overlay .last-refreshed {
   font-size: 12px;
 }
@@ -96,13 +100,18 @@ html, body {
 #overlay .items .channel {
   color: yellow;
 }
+/*
+#overlay .items li .action {
+  visibility: hidden;
+}
+#overlay .items li:hover .action {
+  visibility: visible;
+}
+*/
 #overlay .items .game {
   font-size: 12px;
   font-weight: bold;
   color: gold;
-}
-#overlay .items .pull-right {
-  margin-right: 5px;
 }
 
 // ---------------------------------------------------------

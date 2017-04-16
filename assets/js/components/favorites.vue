@@ -28,29 +28,19 @@
                 </ul>
             </div>
 
-            <!--
-            <ul>
-                <li v-for="(item, i) in favoriteItems">
-                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
-                    <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
-                        {{ getViewers(item) }} {{ item.display_name || item.username }}
-                    </router-link>
-                    <div v-if="item.viewers >= 0" class="game indented">{{ item.game }}</div>
-                </li>
-            </ul>
-            -->
-
             <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
-            <ul v-show="showHistory">
-                <li v-for="(item, i) in historyItems">
-                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
-                    <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
-                    <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
-                        {{ getViewers(item) }} {{ item.display_name || item.username }}
-                    </router-link>
-                    <div v-if="item.viewers >= 0" class="game indented">{{ item.game }}</div>
-                </li>
-            </ul>
+            <div v-for="(items, game) in historyItemsGrouped">
+                <div class="game">{{ game }}</div>
+                <ul>
+                    <li v-for="item in items">
+                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
+                        <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
+                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
+                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        </router-link>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
@@ -67,6 +57,7 @@ export default {
             favoriteItemsGrouped: {},
             favoriteItems: [],
             showHistory: false,
+            historyItemsGrouped: {},
             historyItems: [],
             liveData: {}
         }
@@ -143,15 +134,20 @@ export default {
             // add liveData and group by game + sort
             // note: offline streams will have a game of 'null', as specified in the `this.addLiveData()` function
             //       we use that knowledge to rename/move those to the end of the object
-            favoriteItems = this.addLiveData(favoriteItems).sort(sortArray(['-viewers', 'username']))
-            let favoriteItemsGrouped = groupArrayByField(favoriteItems.slice().sort(sortArray(['game', '-viewers', 'username'])), 'game')
+            favoriteItems = this.addLiveData(favoriteItems).sort(sortArray(['game', '-viewers', 'username']))
+            let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
             favoriteItemsGrouped['offline'] = favoriteItemsGrouped[null]
             delete favoriteItemsGrouped[null]
             this.favoriteItems = favoriteItems
             this.favoriteItemsGrouped = favoriteItemsGrouped
 
             // add liveData and sort
-            this.historyItems = this.addLiveData(historyItems).sort(sortArray(['-viewers', '-last_viewed', 'username']))
+            historyItems = this.addLiveData(historyItems).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
+            let historyItemsGrouped = groupArrayByField(historyItems, 'game')
+            historyItemsGrouped['offline'] = historyItemsGrouped[null]
+            delete historyItemsGrouped[null]
+            this.historyItems = historyItems
+            this.historyItemsGrouped = historyItemsGrouped
 
             // update meta
             this.lastRefresh = getDisplayTime()
@@ -167,6 +163,9 @@ export default {
                 items[i].status = liveDataForUser ? liveDataForUser.status : null
             }
             return items
+        },
+        groupItemsByGame: function(items) {
+
         },
         getLiveData: function() {
             // get usernames - prioritize favorite items
