@@ -58,6 +58,11 @@ html, body {
   text-decoration: none;
   color: yellow;
 }
+#overlay .error {
+  margin-top: 20px;
+  font-weight: bold;
+  color: #f0ad4e;
+}
 #overlay .action {
   margin-left: 10px;
   margin-right: 0;

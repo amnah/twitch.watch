@@ -13,6 +13,16 @@
             <a class="action" :class="{active: sortBy == 'viewers'}" @click="setSortBy('viewers')">viewers</a>
         </div>
 
+        <div v-if="srliveError" class="error">
+            <p>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                SpeedRunsLive is having https issues - their security certificate expired on 4/15/2017.
+            </p>
+            <p>For now, please go to the following link and click on <em>"Advanced"</em> to make an exception</p>
+            <p><a href="https://api.speedrunslive.com/frontend/streams" target="_blank">https://api.speedrunslive.com/frontend/streams</a></p>
+            <p class="action" @click="getStreams()">Refresh <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></p>
+        </div>
+
         <div class="items">
             <div class="scroll-list" v-if="sortBy == 'game'">
                 <div v-for="(channels, game) in channelsByGame">
@@ -49,6 +59,7 @@ export default {
             filter: '',
             filterPreppedForCompare: '',
             sortBy: 'game',
+            srliveError: false,
             channelsByGame: {},
             channelsByViewers: [],
             viewersByGame: {}
@@ -114,6 +125,9 @@ export default {
                 vm.focusFilter()
                 vm.lastRefresh = getDisplayTime()
                 vm.$parent.$options.methods.resizeOverlay()
+                vm.srliveError = false
+            }, function() {
+                vm.srliveError = true
             })
         },
         processChannelsByGame: function(channels) {
