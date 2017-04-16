@@ -20,7 +20,7 @@
                 <li class="viewers" v-for="(item, i) in favoriteItems">
                     <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
-                        {{ getViewers(item) }} {{ item.username }}
+                        {{ getViewers(item) }} {{ item.display_name || item.username }}
                     </router-link>
                     <div v-if="item.viewers >= 0" class="game indented">{{ item.game }}</div>
                 </li>
@@ -31,7 +31,7 @@
                 <li class="viewers" v-for="(item, i) in historyItems">
                     <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history`" @click="removeItem(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
-                        {{ getViewers(item) }} {{ item.username }}
+                        {{ getViewers(item) }} {{ item.display_name || item.username }}
                     </router-link>
                     <div v-if="item.viewers >= 0" class="game indented">{{ item.game }}</div>
                 </li>
@@ -59,7 +59,8 @@ export default {
     },
     methods: {
         addFavorite: function() {
-            const items = updateItemByUsername(this.newUsername, 1)
+            // ensure that we have a proper username, lowercase alphanumerics only
+            const items = updateItemByUsername(this.newUsername.replace(/[^a-z0-9]/gi,'').toLowerCase(), 1)
             this.newUsername = ''
             this.getAndDisplayItems(items)
         },
@@ -123,7 +124,8 @@ export default {
                 for (let i=0; i<data.streams.length; i++) {
                     liveData[data.streams[i].channel.name] = {
                         game: data.streams[i].game,
-                        viewers: data.streams[i].viewers
+                        viewers: data.streams[i].viewers,
+                        display_name: data.streams[i].channel.display_name
                     }
                 }
                 vm.liveData = liveData
@@ -140,9 +142,11 @@ export default {
             for (let i=0; i<items.length; i++) {
                 items[i].game = ''
                 items[i].viewers = -1
+                items[i].display_name = ''
                 if (liveData[items[i].username]) {
                     items[i].game =  liveData[items[i].username].game
                     items[i].viewers =  liveData[items[i].username].viewers
+                    items[i].display_name =  liveData[items[i].username].display_name
                 }
             }
             return items
