@@ -136,7 +136,7 @@ export default {
             //       we use that knowledge to rename/move those to the end of the object
             favoriteItems = addLiveData(favoriteItems, this.liveData).sort(sortArray(['game', '-viewers', 'username']))
             let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
-            favoriteItemsGrouped['offline'] = favoriteItemsGrouped[null]
+            favoriteItemsGrouped['(offline)'] = favoriteItemsGrouped[null]
             delete favoriteItemsGrouped[null]
             this.favoriteItems = favoriteItems
             this.favoriteItemsGrouped = favoriteItemsGrouped
@@ -144,14 +144,14 @@ export default {
             // add liveData and group by game + sort
             historyItems = addLiveData(historyItems, this.liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
             let historyItemsGrouped = groupArrayByField(historyItems, 'game')
-            historyItemsGrouped['offline'] = historyItemsGrouped[null]
+            historyItemsGrouped['(offline)'] = historyItemsGrouped[null]
             delete historyItemsGrouped[null]
             this.historyItems = historyItems
             this.historyItemsGrouped = historyItemsGrouped
 
             // update meta
             this.lastRefresh = getDisplayTime()
-            this.$parent.$options.methods.resizeOverlay()
+            //this.$parent.$options.methods.resizeOverlay() // this seems to cause a weird flicker
         },
         getLiveData: function() {
             // get usernames - prioritize favorite items
@@ -172,6 +172,7 @@ export default {
             buildLiveData(usernames).then(function(liveData) {
                 vm.liveData = liveData
                 vm.processItems(vm.favoriteItems, vm.historyItems)
+                vm.$parent.$options.methods.resizeOverlay()
             })
         },
     }
