@@ -29,7 +29,7 @@ function failureCallback(data) {
 }
 
 // --------------------------------------------------------
-// Twitch export object
+// Twitch export functions
 // --------------------------------------------------------
 
 export function getTwitch(url, data) {
@@ -77,7 +77,7 @@ export function checkStreams(usernames) {
     if (chunks.length === 2) {
         const channels0 = getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
         const channels1 = getTwitch('streams', {channel: chunks[1].join(','), limit: 100})
-        return $.when(channels0, channels1).then(function(data1, data2) {
+        return $.when(channels0, channels1).then(function(data0, data1) {
             return { streams: data0.streams.concat(data1.streams) }
         });
     }
@@ -89,4 +89,31 @@ export function checkStreams(usernames) {
             return { streams: data0.streams.concat(data1.streams).concat(data2.streams) }
         });
     }
+}
+
+export function buildLiveData(usernames) {
+    return checkStreams(usernames).then(function(data) {
+        // parse into format that we can use
+        const liveData = {}
+        for (let i=0; i<data.streams.length; i++) {
+            liveData[data.streams[i].channel.name] = {
+                game: data.streams[i].game,
+                viewers: data.streams[i].viewers,
+                display_name: data.streams[i].channel.display_name,
+                status: data.streams[i].channel.status
+            }
+        }
+        return liveData
+    })
+}
+
+export function addLiveData(items, liveData) {
+    for (let i=0; i<items.length; i++) {
+        const liveDataForUser = liveData[items[i].username]
+        items[i].game = liveDataForUser ? liveDataForUser.game : null
+        items[i].viewers = liveDataForUser ? liveDataForUser.viewers : -1
+        items[i].display_name = liveDataForUser ? liveDataForUser.display_name : null
+        items[i].status = liveDataForUser ? liveDataForUser.status : null
+    }
+    return items
 }

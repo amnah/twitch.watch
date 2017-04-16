@@ -47,7 +47,7 @@
 
 <script>
 import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
-import {checkStreams} from '../twitchApi.js'
+import {buildLiveData, addLiveData} from '../twitchApi.js'
 export default {
     name: 'favorites',
     data: function() {
@@ -124,17 +124,17 @@ export default {
                 }
             }
 
-            // process items here using the cached data in `this.liveData`
+            // process items here - this is using the local data in `vm.liveData`
             this.processItems(favoriteItems, historyItems)
 
-            // refresh live data
+            // refresh live data from twitch, which will in turn call `vm.processItems()` again
             this.getLiveData()
         },
         processItems: function(favoriteItems, historyItems) {
             // add liveData and group by game + sort
-            // note: offline streams will have a game of 'null', as specified in the `this.addLiveData()` function
+            // note: offline streams will have a game of 'null', as specified in the `twitchApi.addLiveData()` function
             //       we use that knowledge to rename/move those to the end of the object
-            favoriteItems = this.addLiveData(favoriteItems).sort(sortArray(['game', '-viewers', 'username']))
+            favoriteItems = addLiveData(favoriteItems, this.liveData).sort(sortArray(['game', '-viewers', 'username']))
             let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
             favoriteItemsGrouped['offline'] = favoriteItemsGrouped[null]
             delete favoriteItemsGrouped[null]
@@ -142,7 +142,7 @@ export default {
             this.favoriteItemsGrouped = favoriteItemsGrouped
 
             // add liveData and group by game + sort
-            historyItems = this.addLiveData(historyItems).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
+            historyItems = addLiveData(historyItems, this.liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
             let historyItemsGrouped = groupArrayByField(historyItems, 'game')
             historyItemsGrouped['offline'] = historyItemsGrouped[null]
             delete historyItemsGrouped[null]
@@ -152,20 +152,6 @@ export default {
             // update meta
             this.lastRefresh = getDisplayTime()
             this.$parent.$options.methods.resizeOverlay()
-        },
-        addLiveData: function(items) {
-            const liveData = this.liveData
-            for (let i=0; i<items.length; i++) {
-                const liveDataForUser = liveData[items[i].username]
-                items[i].game = liveDataForUser ? liveDataForUser.game : null
-                items[i].viewers = liveDataForUser ? liveDataForUser.viewers : -1
-                items[i].display_name = liveDataForUser ? liveDataForUser.display_name : null
-                items[i].status = liveDataForUser ? liveDataForUser.status : null
-            }
-            return items
-        },
-        groupItemsByGame: function(items) {
-
         },
         getLiveData: function() {
             // get usernames - prioritize favorite items
@@ -182,19 +168,9 @@ export default {
             // we want to focus on the favorites, not the history
             usernames = usernames.slice(0, 300)
 
-            // check twitch for live streams
-            const liveData = {}
-            checkStreams(usernames).then(function(data) {
-                // parse into format that we can use
-                for (let i=0; i<data.streams.length; i++) {
-                    liveData[data.streams[i].channel.name] = {
-                        game: data.streams[i].game,
-                        viewers: data.streams[i].viewers,
-                        display_name: data.streams[i].channel.display_name,
-                        status: data.streams[i].channel.status
-                    }
-                }
-                vm.liveData = liveData
+            // build live data from twitch
+            buildLiveData(usernames).then(function(data) {
+                vm.liveData = data
                 vm.processItems(vm.favoriteItems, vm.historyItems)
             })
         },
