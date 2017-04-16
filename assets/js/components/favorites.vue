@@ -43,7 +43,7 @@
             <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
             <ul v-show="showHistory">
                 <li v-for="(item, i) in historyItems">
-                    <span class="action danger glyphicon glyphicon-remove-circle pull-right" aria-hidden="true" :title="`remove [${item.username}] from history (PERMANENT)`" @click="removeItem(item.username)"></span>
+                    <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
                     <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
                         {{ getViewers(item) }} {{ item.display_name || item.username }}
