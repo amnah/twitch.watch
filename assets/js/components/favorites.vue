@@ -100,7 +100,11 @@ export default {
         },
         getChannelTitle: function(item) {
             const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
-            return `${item.num_viewed} views - last viewed ${displayTime}`
+            let title = `${item.num_viewed} views - last viewed ${displayTime}`
+            if (item.status) {
+                title = `${item.status}\n\n${title}`
+            }
+            return title
         },
         getViewers: function(item) {
             if (item.viewers >= 0) {
@@ -156,14 +160,11 @@ export default {
         addLiveData: function(items) {
             const liveData = this.liveData
             for (let i=0; i<items.length; i++) {
-                items[i].game = null
-                items[i].viewers = -1
-                items[i].display_name = null
-                if (liveData[items[i].username]) {
-                    items[i].game =  liveData[items[i].username].game
-                    items[i].viewers =  liveData[items[i].username].viewers
-                    items[i].display_name =  liveData[items[i].username].display_name
-                }
+                const liveDataForUser = liveData[items[i].username]
+                items[i].game = liveDataForUser ? liveDataForUser.game : null
+                items[i].viewers = liveDataForUser ? liveDataForUser.viewers : -1
+                items[i].display_name = liveDataForUser ? liveDataForUser.display_name : null
+                items[i].status = liveDataForUser ? liveDataForUser.status : null
             }
             return items
         },
@@ -190,7 +191,8 @@ export default {
                     liveData[data.streams[i].channel.name] = {
                         game: data.streams[i].game,
                         viewers: data.streams[i].viewers,
-                        display_name: data.streams[i].channel.display_name
+                        display_name: data.streams[i].channel.display_name,
+                        status: data.streams[i].channel.status
                     }
                 }
                 vm.liveData = liveData
