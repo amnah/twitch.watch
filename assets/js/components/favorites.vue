@@ -8,7 +8,7 @@
         </span>
         <form role="form" @submit.prevent="addFavorite()">
             <input placeholder="(twitch username)" v-model.trim="newUsername">
-            <a class="action" href="javascript:void(0)" @click="addFavorite()">add</a>
+            <a class="action" @click="addFavorite()">add</a>
         </form>
 
         <!--

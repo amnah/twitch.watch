@@ -7,7 +7,7 @@
         <div id="overlay">
             <div id="currently-watching">
                 {{ username || '(no stream)' }}
-                <a v-show="username" class="action" href="javascript:void(0)" @click="closeStream()">close</a>
+                <a v-show="username" class="action" @click="closeStream()">close</a>
             </div>
 
             <ul id="navbar" class="nav nav-tabs" role="tablist">
