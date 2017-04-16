@@ -10,9 +10,8 @@ function twitchUrl() {
 function twitchConfig() {
     return {
         headers: {
-            // client id stolen from [twitch.tv stream browser] firefox addon bahahahahha
             // use v3 because v5 sucks fucking ass. can't do shit using usernames
-            'Client-ID': getConfig('twitchClientId') || 't163mfex6sggtq6ogh0fo8qcy9ybpd6',
+            'Client-ID': getConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
             'Accept': 'application/vnd.twitchtv.v3+json'
         }
     }
@@ -43,15 +42,51 @@ export function getTwitch(url, data) {
 }
 
 export function checkStreams(usernames) {
-    // convert array to string
-    if (usernames.join) {
-        usernames = usernames.join(',')
+    // ensure array
+    if ($.type(usernames) === 'string') {
+        usernames = usernames.split(',')
     }
 
     // return empty promise if we have no usernames
     // @link http://stackoverflow.com/questions/30004503/return-an-empty-promise
-    if (!usernames) {
+    if (!usernames.length) {
         return $.when({streams:[]})
     }
-    return getTwitch('streams', {channel: usernames, limit: 100})
+
+    // check if we have more than 300
+    const max = 300
+    usernames = $.unique(usernames)
+    if (usernames.length > max) {
+        const msg = `WARNING: trying to check ${usernames.length} streams at once - limiting to ${max}`
+        alert(msg)
+        console.warn(msg)
+        usernames = usernames.slice(0, max)
+    }
+
+    // chunk array by 100 (twitch limit)
+    //@ link http://stackoverflow.com/questions/8495687/split-array-into-chunks/8495740#8495740
+    let chunks = []
+    for (let i=0; i<usernames.length; i+=100) {
+        chunks.push(usernames.slice(i, i+100));
+    }
+
+    // make multiple ajax calls at once depending on how much usernames we have
+    if (chunks.length === 1) {
+        return getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
+    }
+    if (chunks.length === 2) {
+        const channels0 = getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
+        const channels1 = getTwitch('streams', {channel: chunks[1].join(','), limit: 100})
+        return $.when(channels0, channels1).then(function(data1, data2) {
+            return { streams: data0.streams.concat(data1.streams) }
+        });
+    }
+    if (chunks.length === 3) {
+        const channels0 = getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
+        const channels1 = getTwitch('streams', {channel: chunks[1].join(','), limit: 100})
+        const channels2 = getTwitch('streams', {channel: chunks[2].join(','), limit: 100})
+        return $.when(channels0, channels1, channels2).then(function(data0, data1, data2) {
+            return { streams: data0.streams.concat(data1.streams).concat(data2.streams) }
+        });
+    }
 }

@@ -51,7 +51,7 @@ export function getDisplayTime() {
 // @link http://stackoverflow.com/questions/6913512/how-to-sort-an-array-of-objects-by-multiple-fields/30446887#30446887
 export function sortArray(fields) {
     // convert string to array
-    if($.type(fields) === "string") {
+    if ($.type(fields) === 'string') {
         fields = [fields]
     }
     return function (a, b) {

@@ -29,7 +29,7 @@
             </div>
 
             <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
-            <div v-for="(items, game) in historyItemsGrouped">
+            <div v-show="showHistory" v-for="(items, game) in historyItemsGrouped">
                 <div class="game">{{ game }}</div>
                 <ul>
                     <li v-for="item in items">
@@ -141,7 +141,7 @@ export default {
             this.favoriteItems = favoriteItems
             this.favoriteItemsGrouped = favoriteItemsGrouped
 
-            // add liveData and sort
+            // add liveData and group by game + sort
             historyItems = this.addLiveData(historyItems).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
             let historyItemsGrouped = groupArrayByField(historyItems, 'game')
             historyItemsGrouped['offline'] = historyItemsGrouped[null]
@@ -178,9 +178,9 @@ export default {
                 usernames.push(vm.historyItems[i].username)
             }
 
-            // limit usernames to 125 because the user may have a lot of historyItems
+            // limit usernames to 300 because the user may have a lot of historyItems
             // we want to focus on the favorites, not the history
-            usernames = usernames.slice(0, 125)
+            usernames = usernames.slice(0, 300)
 
             // check twitch for live streams
             const liveData = {}
