@@ -77,7 +77,6 @@ html, body {
 }
 #overlay .scroll-list {
   overflow-y: auto;
-  height: 500px; // temporary! this will be changed when page loads or is resized
 }
 #overlay .indented {
   margin-left: 30px;
@@ -135,6 +134,14 @@ html, body {
   cursor: pointer;
 }
 
+#favorites h4 {
+  margin-top: 40px;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+#favorites .items {
+  margin-top: 12px;
+}
 #add-favorite {
   margin-bottom: 6px;
 }

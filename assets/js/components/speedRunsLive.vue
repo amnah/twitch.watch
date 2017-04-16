@@ -110,9 +110,9 @@ export default {
                 // sort by games
                 vm.processChannelsByGame(channels)
 
-                // update refresh time and focus on the filter
-                vm.lastRefresh = getDisplayTime()
+                // update refresh time and resize overlay
                 vm.focusFilter()
+                vm.lastRefresh = getDisplayTime()
                 vm.$parent.$options.methods.resizeOverlay()
             })
         },

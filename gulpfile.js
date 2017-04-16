@@ -45,7 +45,11 @@ const customOpts = {
     debug: true
 }
 const browserifyOpts = assign({}, watchify.args, customOpts)
-const watchifyOpts = {poll: pollInterval, delay: pollInterval, ignoreWatch: ['**/node_modules/**', 'vendor/**', '**/*.php']}
+const watchifyOpts = {ignoreWatch: ['**/node_modules/**', 'vendor/**', '**/*.php']}
+if (pollInterval) {
+    watchifyOpts.poll = pollInterval
+    watchifyOpts.delay = pollInterval
+}
 
 // note: this uses the options set in .babelrc so we can use those features in .vue files
 // @link https://github.com/vuejs/vueify/issues/71#issuecomment-202013630

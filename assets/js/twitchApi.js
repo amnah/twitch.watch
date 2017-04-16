@@ -23,7 +23,7 @@ function successCallback(data) {
 function failureCallback(data) {
     // display the error message and reject
     const origAjax = this;
-    const reject = $.Deferred().reject();
+    const reject = $.Deferred().reject(data);
     const msg = data.status ? `[ ${data.status} ] ${data.statusText}` : `[ Network error ] Please check your connection`;
     console.log(`${msg}\n\n@ ${origAjax.url}`);
     return reject;
