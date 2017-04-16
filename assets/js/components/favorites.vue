@@ -40,8 +40,8 @@
             </ul>
             -->
 
-            <p class="action"><br/>show history</p>
-            <ul>
+            <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
+            <ul v-show="showHistory">
                 <li v-for="(item, i) in historyItems">
                     <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history`" @click="removeItem(item.username)"></span>
                     <router-link class="channel" :to="'/' + item.username" :title="getChannelTitle(item)">
@@ -65,6 +65,7 @@ export default {
             lastRefresh: '',
             favoriteItemsGrouped: {},
             favoriteItems: [],
+            showHistory: false,
             historyItems: [],
             liveData: {}
         }
@@ -100,7 +101,6 @@ export default {
         getAndDisplayItems: function(items) {
             // filter favorites and history items
             items = items || getItems()
-            items = this.addLiveData(items)
             let favoriteItems = []
             let historyItems = []
             for (let i=0; i<items.length; i++) {
@@ -111,17 +111,46 @@ export default {
                 }
             }
 
-            // sort items and display initial data (before ajax call to check live streams)
-            favoriteItems.sort(sortArray(['-viewers', 'username']))
-            historyItems.sort(sortArray(['-viewers', '-last_viewed']))
-            this.favoriteItems = favoriteItems
-            this.historyItems = historyItems
+            // process items here using the cached data in `this.liveData`
+            this.processItems(favoriteItems, historyItems)
 
+            // refresh live data
             this.getLiveData()
         },
+        processItems: function(favoriteItems, historyItems) {
+            // add liveData and group by game + sort
+            // note: offline streams will have a game of 'null', as specified in the `this.addLiveData()` function
+            //       we use that knowledge to rename/move those to the end of the object
+            favoriteItems = this.addLiveData(favoriteItems).sort(sortArray(['-viewers', 'username']))
+            let favoriteItemsGrouped = groupArrayByField(favoriteItems.slice().sort(sortArray(['game', '-viewers'])), 'game')
+            favoriteItemsGrouped['offline'] = favoriteItemsGrouped[null]
+            delete favoriteItemsGrouped[null]
+            this.favoriteItems = favoriteItems
+            this.favoriteItemsGrouped = favoriteItemsGrouped
+
+            // add liveData and sort
+            this.historyItems = this.addLiveData(historyItems).sort(sortArray(['-viewers', '-last_viewed']))
+
+            // update meta
+            this.lastRefresh = getDisplayTime()
+            this.$parent.$options.methods.resizeOverlay()
+        },
+        addLiveData: function(items) {
+            const liveData = this.liveData
+            for (let i=0; i<items.length; i++) {
+                items[i].game = null
+                items[i].viewers = -1
+                items[i].display_name = null
+                if (liveData[items[i].username]) {
+                    items[i].game =  liveData[items[i].username].game
+                    items[i].viewers =  liveData[items[i].username].viewers
+                    items[i].display_name =  liveData[items[i].username].display_name
+                }
+            }
+            return items
+        },
         getLiveData: function() {
-            // get usernames
-            // prioritize favorite items and limit it to 125 because user may have a lot of historyItems
+            // get usernames - prioritize favorite items
             const vm = this
             let usernames = []
             for (let i=0; i<vm.favoriteItems.length; i++) {
@@ -130,6 +159,9 @@ export default {
             for (let i=0; i<vm.historyItems.length; i++) {
                 usernames.push(vm.historyItems[i].username)
             }
+
+            // limit usernames to 125 because the user may have a lot of historyItems
+            // we want to focus on the favorites, not the history
             usernames = usernames.slice(0, 125)
 
             // check twitch for live streams
@@ -144,32 +176,8 @@ export default {
                     }
                 }
                 vm.liveData = liveData
-
-                // update items and sort
-                vm.favoriteItems = vm.addLiveData(vm.favoriteItems).sort(sortArray(['-viewers', 'username']))
-                let favoriteItemsGrouped = groupArrayByField(vm.favoriteItems.slice().sort(sortArray(['game', '-viewers'])), 'game')
-                const tmp = favoriteItemsGrouped['']
-                delete favoriteItemsGrouped['']
-                favoriteItemsGrouped['offline'] = tmp
-                vm.favoriteItemsGrouped = favoriteItemsGrouped
-                vm.historyItems = vm.addLiveData(vm.historyItems).sort(sortArray(['-viewers', '-last_viewed']))
-                vm.lastRefresh = getDisplayTime()
-                vm.$parent.$options.methods.resizeOverlay()
+                vm.processItems(vm.favoriteItems, vm.historyItems)
             })
-        },
-        addLiveData: function(items) {
-            const liveData = this.liveData
-            for (let i=0; i<items.length; i++) {
-                items[i].game = ''
-                items[i].viewers = -1
-                items[i].display_name = ''
-                if (liveData[items[i].username]) {
-                    items[i].game =  liveData[items[i].username].game
-                    items[i].viewers =  liveData[items[i].username].viewers
-                    items[i].display_name =  liveData[items[i].username].display_name
-                }
-            }
-            return items
         },
     }
 }
