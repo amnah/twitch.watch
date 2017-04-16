@@ -17,7 +17,7 @@
 
         <div class="items scroll-list">
             <div v-for="(items, game) in favoriteItemsGrouped">
-                <div class="game">{{ game }}</div>
+                <div class="game">{{ game || '(No game set)' }}</div>
                 <ul>
                     <li v-for="item in items">
                         <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
@@ -30,7 +30,7 @@
 
             <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
             <div v-show="showHistory" v-for="(items, game) in historyItemsGrouped">
-                <div class="game">{{ game }}</div>
+                <div class="game">{{ game || '(No game set)' }}</div>
                 <ul>
                     <li v-for="item in items">
                         <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
