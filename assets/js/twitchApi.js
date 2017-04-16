@@ -1,5 +1,5 @@
 
-import {getConfig} from './functions.js'
+import {getConfig, arrayPluck} from './functions.js'
 
 // --------------------------------------------------------
 // Twitch settings and helper functions
@@ -10,9 +10,8 @@ function twitchUrl() {
 function twitchConfig() {
     return {
         headers: {
-            // use v3 because v5 sucks fucking ass. can't do shit using usernames
             'Client-ID': getConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
-            'Accept': 'application/vnd.twitchtv.v3+json'
+            'Accept': 'application/vnd.twitchtv.v5+json'
         }
     }
 }
@@ -41,7 +40,31 @@ export function getTwitch(url, data) {
     return $.ajax(params).then(successCallback, failureCallback)
 }
 
-export function checkStreams(usernames) {
+export function getUserIds(usernames) {
+    if (usernames.join) {
+        usernames = usernames.join(',')
+    }
+    if (!usernames) {
+        return $.when([])
+    }
+    return getTwitch('users', {login: usernames, limit: 100}).then(function(data) {
+        return arrayPluck(data.users, '_id')
+    })
+}
+
+export function checkStreams(userIds) {
+    if (userIds.join) {
+        userIds = userIds.join(',')
+    }
+    if (!userIds) {
+        return $.when([])
+    }
+    return getTwitch('streams', {channel: userIds, limit: 100}).then(function(data) {
+        return data.streams
+    })
+}
+
+export function checkStreamsByUsernames(usernames) {
     // ensure array
     if (usernames.split) {
         usernames = usernames.split(',')
@@ -50,7 +73,7 @@ export function checkStreams(usernames) {
     // return empty promise if we have no usernames
     // @link http://stackoverflow.com/questions/30004503/return-an-empty-promise
     if (!usernames.length) {
-        return $.when({streams:[]})
+        return $.when([])
     }
 
     // check if we have more than 300
@@ -70,37 +93,29 @@ export function checkStreams(usernames) {
         chunks.push(usernames.slice(i, i+100));
     }
 
-    // make multiple ajax calls at once depending on how much usernames we have
-    if (chunks.length === 1) {
-        return getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
-    }
-    if (chunks.length === 2) {
-        const channels0 = getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
-        const channels1 = getTwitch('streams', {channel: chunks[1].join(','), limit: 100})
-        return $.when(channels0, channels1).then(function(data0, data1) {
-            return { streams: data0.streams.concat(data1.streams) }
+    // make multiple ajax calls at once depending on how many usernames we have
+    // first we need to use the usernames to get userIds
+    // then use the userIds to check stream status
+    const chunk0 = getUserIds(chunks[0])
+    const chunk1 = chunks[1] ? getUserIds(chunks[1]) : []
+    const chunk2 = chunks[2] ? getUserIds(chunks[2]) : []
+    return $.when(chunk0, chunk1, chunk2).then(function(userIds0, userIds1, userIds2) {
+        return $.when(checkStreams(userIds0), checkStreams(userIds1), checkStreams(userIds2)).then(function(streams0, streams1, streams2) {
+            return streams0.concat(streams1).concat(streams2)
         });
-    }
-    if (chunks.length === 3) {
-        const channels0 = getTwitch('streams', {channel: chunks[0].join(','), limit: 100})
-        const channels1 = getTwitch('streams', {channel: chunks[1].join(','), limit: 100})
-        const channels2 = getTwitch('streams', {channel: chunks[2].join(','), limit: 100})
-        return $.when(channels0, channels1, channels2).then(function(data0, data1, data2) {
-            return { streams: data0.streams.concat(data1.streams).concat(data2.streams) }
-        });
-    }
+    })
 }
 
 export function buildLiveData(usernames) {
-    return checkStreams(usernames).then(function(data) {
+    return checkStreamsByUsernames(usernames).then(function(streams) {
         // parse into format that we can use
         const liveData = {}
-        for (let i=0; i<data.streams.length; i++) {
-            liveData[data.streams[i].channel.name] = {
-                game: data.streams[i].game,
-                viewers: data.streams[i].viewers,
-                display_name: data.streams[i].channel.display_name,
-                status: data.streams[i].channel.status
+        for (let i=0; i<streams.length; i++) {
+            liveData[streams[i].channel.name] = {
+                game: streams[i].game,
+                viewers: streams[i].viewers,
+                display_name: streams[i].channel.display_name,
+                status: streams[i].channel.status
             }
         }
         return liveData
