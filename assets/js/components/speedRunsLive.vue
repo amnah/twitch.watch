@@ -9,8 +9,8 @@
 
         <div class="sort-by">
             <strong>Sort by:</strong>
-            <a class="action" :class="{active: sortBy == 'viewers'}" href="javascript:void(0)" @click="setSortBy('viewers')">viewers</a>
             <a class="action" :class="{active: sortBy == 'game'}" href="javascript:void(0)" @click="setSortBy('game')">game</a>
+            <a class="action" :class="{active: sortBy == 'viewers'}" href="javascript:void(0)" @click="setSortBy('viewers')">viewers</a>
         </div>
 
         <div class="items">
@@ -48,7 +48,7 @@ export default {
             lastRefresh: '',
             filter: '',
             filterPreppedForCompare: '',
-            sortBy: 'viewers',
+            sortBy: 'game',
             channelsByGame: {},
             channelsByViewers: [],
             viewersByGame: {}
