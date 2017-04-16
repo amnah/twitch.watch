@@ -76,9 +76,17 @@ export default {
     methods: {
         addFavorite: function() {
             // ensure that we have a proper username, lowercase alphanumerics only
-            const items = updateItemByUsername(this.newUsername.replace(/[^a-z0-9]/gi,'').toLowerCase(), 1)
-            this.newUsername = ''
+            // then separate by comma
+            let items
+            let usernames = this.newUsername.replace(/[^a-z0-9_,]/gi,'').toLowerCase().split(',')
+            for (let i=0; i<usernames.length; i++) {
+                // check for username
+                if (usernames[i]) {
+                    items = updateItemByUsername(usernames[i], 1)
+                }
+            }
             this.getAndDisplayItems(items)
+            this.newUsername = ''
         },
         getChannelTitle: function(item) {
             const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
@@ -122,14 +130,14 @@ export default {
             // note: offline streams will have a game of 'null', as specified in the `this.addLiveData()` function
             //       we use that knowledge to rename/move those to the end of the object
             favoriteItems = this.addLiveData(favoriteItems).sort(sortArray(['-viewers', 'username']))
-            let favoriteItemsGrouped = groupArrayByField(favoriteItems.slice().sort(sortArray(['game', '-viewers'])), 'game')
+            let favoriteItemsGrouped = groupArrayByField(favoriteItems.slice().sort(sortArray(['game', '-viewers', 'username'])), 'game')
             favoriteItemsGrouped['offline'] = favoriteItemsGrouped[null]
             delete favoriteItemsGrouped[null]
             this.favoriteItems = favoriteItems
             this.favoriteItemsGrouped = favoriteItemsGrouped
 
             // add liveData and sort
-            this.historyItems = this.addLiveData(historyItems).sort(sortArray(['-viewers', '-last_viewed']))
+            this.historyItems = this.addLiveData(historyItems).sort(sortArray(['-viewers', '-last_viewed', 'username']))
 
             // update meta
             this.lastRefresh = getDisplayTime()
