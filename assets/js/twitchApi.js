@@ -43,8 +43,15 @@ export function getTwitch(url, data) {
 }
 
 export function checkStreams(usernames) {
+    // convert array to string
     if (usernames.join) {
         usernames = usernames.join(',')
+    }
+
+    // return empty promise if we have no usernames
+    // @link http://stackoverflow.com/questions/30004503/return-an-empty-promise
+    if (!usernames) {
+        return $.when({streams:[]})
     }
     return getTwitch('streams', {channel: usernames, limit: 100})
 }
