@@ -11,7 +11,7 @@ function twitchConfig() {
     return {
         headers: {
             'Client-ID': getConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
-            'Accept': 'application/vnd.twitchtv.v5+json'
+            'Accept': 'application/vnd.twitchtv.v3+json'
         }
     }
 }
@@ -27,10 +27,6 @@ function failureCallback(data) {
     return reject;
 }
 
-// --------------------------------------------------------
-// Twitch export functions
-// --------------------------------------------------------
-
 export function getTwitch(url, data) {
     const params = $.extend(twitchConfig(), {
         url: twitchUrl() + url,
@@ -40,6 +36,11 @@ export function getTwitch(url, data) {
     return $.ajax(params).then(successCallback, failureCallback)
 }
 
+// --------------------------------------------------------
+// Application functions
+// --------------------------------------------------------
+
+// v5
 export function getUserIds(usernames) {
     if (usernames.join) {
         usernames = usernames.join(',')
@@ -52,7 +53,8 @@ export function getUserIds(usernames) {
     })
 }
 
-export function checkStreams(userIds) {
+// v5
+export function getStreams(userIds) {
     if (userIds.join) {
         userIds = userIds.join(',')
     }
@@ -64,7 +66,20 @@ export function checkStreams(userIds) {
     })
 }
 
-export function checkStreamsByUsernames(usernames) {
+// v3
+export function getStreamsV3(usernames) {
+    if (usernames.join) {
+        usernames = usernames.join(',')
+    }
+    if (!usernames) {
+        return $.when([])
+    }
+    return getTwitch('streams', {channel: usernames, limit: 100}).then(function(data) {
+        return data.streams
+    })
+}
+
+export function getStreamsByUsernames(usernames) {
     // ensure array
     if (usernames.split) {
         usernames = usernames.split(',')
@@ -93,21 +108,32 @@ export function checkStreamsByUsernames(usernames) {
         chunks.push(usernames.slice(i, i+100));
     }
 
-    // make multiple ajax calls at once depending on how many usernames we have
-    // first we need to use the usernames to get userIds
-    // then use the userIds to check stream status
+    // twitch v3
+    // make concurrent ajax calls if needed
+    const channels0 = getStreamsV3(chunks[0])
+    const channels1 = chunks[1] ? getStreamsV3(chunks[1]) : []
+    const channels2 = chunks[2] ? getStreamsV3(chunks[2]) : []
+    return $.when(channels0, channels1, channels2).then(function(streams0, streams1, streams2) {
+        return streams0.concat(streams1).concat(streams2)
+    });
+
+    /*
+    // twitch v5
+    // make concurrent ajax calls if needed
+    // use the usernames to get userIds, then use those userIds to get the streams
     const chunk0 = getUserIds(chunks[0])
     const chunk1 = chunks[1] ? getUserIds(chunks[1]) : []
     const chunk2 = chunks[2] ? getUserIds(chunks[2]) : []
     return $.when(chunk0, chunk1, chunk2).then(function(userIds0, userIds1, userIds2) {
-        return $.when(checkStreams(userIds0), checkStreams(userIds1), checkStreams(userIds2)).then(function(streams0, streams1, streams2) {
+        return $.when(getStreams(userIds0), getStreams(userIds1), getStreams(userIds2)).then(function(streams0, streams1, streams2) {
             return streams0.concat(streams1).concat(streams2)
         });
     })
+    */
 }
 
 export function buildLiveData(usernames) {
-    return checkStreamsByUsernames(usernames).then(function(streams) {
+    return getStreamsByUsernames(usernames).then(function(streams) {
         // parse into format that we can use
         const liveData = {}
         for (let i=0; i<streams.length; i++) {
