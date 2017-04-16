@@ -169,8 +169,8 @@ export default {
             usernames = usernames.slice(0, 300)
 
             // build live data from twitch
-            buildLiveData(usernames).then(function(data) {
-                vm.liveData = data
+            buildLiveData(usernames).then(function(liveData) {
+                vm.liveData = liveData
                 vm.processItems(vm.favoriteItems, vm.historyItems)
             })
         },
