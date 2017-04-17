@@ -1,6 +1,6 @@
 
 <template>
-    <div id="speedrunslive">
+    <div id="srlive">
         <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
         <span class="last-refreshed action pull-right" title="last refreshed at" @click="getStreams()">
             {{ lastRefresh }}
@@ -52,7 +52,7 @@
 <script>
 import {getDisplayTime, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
 export default {
-    name: 'speedRunsLive',
+    name: 'srlive',
     data: function() {
         return {
             lastRefresh: '',

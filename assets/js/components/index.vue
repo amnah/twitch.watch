@@ -18,7 +18,7 @@
 
             <favorites v-show="currentPage == 'favorites'" ref="favorites"></favorites>
             <!--<twitch v-show="currentPage == 'twitch'" ref="twitch"></twitch>-->
-            <speed-runs-live v-show="currentPage == 'srlive'" ref="srlive"></speed-runs-live>
+            <srlive v-show="currentPage == 'srlive'" ref="srlive"></srlive>
             <about v-show="currentPage == 'about'" ref="about"></about>
         </div>
 
@@ -36,7 +36,7 @@ export default {
     components: {
         favorites: require('./favorites.vue'),
         twitch: require('./twitch.vue'),
-        speedRunsLive: require('./speedRunsLive.vue'),
+        srlive: require('./srlive.vue'),
         about: require('./about.vue')
     },
     data: function() {
@@ -127,7 +127,7 @@ export default {
 
             // resize scroll list
             // @link http://stackoverflow.com/questions/13075920/add-css-rule-via-jquery-for-future-created-elements/34293036#34293036
-            const $streamList = $('.scroll-list')
+            const $streamList = $('.scroll-list:visible')
             if ($streamList.length) {
                 let newHeight = $overlay.height() - $streamList.position().top
                 newHeight += 10 // add 10 to fill in a bit more
