@@ -62,9 +62,6 @@ export default {
             liveData: {}
         }
     },
-    mounted: function() {
-        this.getAndDisplayItems()
-    },
     methods: {
         addFavorite: function(username) {
 

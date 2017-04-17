@@ -16,10 +16,10 @@
                 </li>
             </ul>
 
-            <favorites v-if="currentPage == 'favorites'" ref="favorites"></favorites>
-            <twitch v-if="currentPage == 'twitch'" ref="twitch"></twitch>
-            <speed-runs-live v-if="currentPage == 'srlive'" ref="srlive"></speed-runs-live>
-            <about v-if="currentPage == 'about'" ref="about"></about>
+            <favorites v-show="currentPage == 'favorites'" ref="favorites"></favorites>
+            <!--<twitch v-show="currentPage == 'twitch'" ref="twitch"></twitch>-->
+            <speed-runs-live v-show="currentPage == 'srlive'" ref="srlive"></speed-runs-live>
+            <about v-show="currentPage == 'about'" ref="about"></about>
         </div>
 
         <!-- twitch player -->
@@ -72,6 +72,8 @@ export default {
         } else {
             $overlay.fadeIn('fast')
         }
+
+        vm.refreshPage()
     },
     watch: {
         $route: function(newRoute, oldRoute) {
@@ -88,9 +90,18 @@ export default {
             }
             this.username = ''
             setPageTitle()
+        },
+        currentPage: function(val) {
+            this.refreshPage()
         }
     },
     methods: {
+        refreshPage: function() {
+            const vm = this
+            if (vm.$refs[vm.currentPage] && vm.$refs[vm.currentPage].refresh) {
+                vm.$refs[vm.currentPage].refresh()
+            }
+        },
         toggleMenu: function() {
             // hide overlay
             const vm = this
@@ -106,9 +117,7 @@ export default {
             })
 
             // refresh data in current page
-            if (vm.$refs[vm.currentPage] && vm.$refs[vm.currentPage].refresh) {
-                vm.$refs[vm.currentPage].refresh()
-            }
+            vm.refreshPage()
         },
         resizeOverlay: function() {
             // resize overlay

@@ -65,9 +65,6 @@ export default {
             viewersByGame: {}
         }
     },
-    mounted: function() {
-        this.getStreams()
-    },
     methods: {
         setSortBy: function(by) {
             this.sortBy = by
