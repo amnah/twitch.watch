@@ -68,7 +68,6 @@ export default {
     methods: {
         setSortBy: function(by) {
             this.sortBy = by
-            this.focusFilter()
         },
         prepFilterForCompare: function() {
             this.filterPreppedForCompare = prepStringForCompare(this.filter)
@@ -92,11 +91,6 @@ export default {
             }
             return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
         },
-        focusFilter: function() {
-            // lets not focus for now, it's annoying
-            return
-            $('#speedrunslive-filter').focus()
-        },
         refresh: function() {
             this.getStreams()
         },
@@ -116,36 +110,28 @@ export default {
                 vm.channelsByViewers = channels.sort(sortArray('-current_viewers'))
 
                 // sort by games
-                vm.processChannelsByGame(channels)
+                // clone array so we don't affect the original
+                let channelsByGame = channels.slice().sort(sortArray(['meta_game', '-current_viewers']))
+                channelsByGame = groupArrayByField(channelsByGame, 'meta_game')
+                vm.channelsByGame = channelsByGame
+
+                // count number of viewers
+                for (let game in channelsByGame) {
+                    let numViewers = 0
+                    const channels = channelsByGame[game]
+                    for (let i=0; i<channels.length; i++) {
+                        numViewers += channels[i].current_viewers
+                    }
+                    vm.viewersByGame[game] = numViewers
+                }
 
                 // update refresh time and resize overlay
-                vm.focusFilter()
                 vm.lastRefresh = getDisplayTime()
                 vm.$parent.$options.methods.resizeOverlay()
                 vm.srliveError = false
             }, function() {
                 vm.srliveError = true
             })
-        },
-        processChannelsByGame: function(channels) {
-            // sort channels by game
-            const vm = this
-            channels = channels.slice() // clone array so we don't affect the original
-            channels.sort(sortArray(['meta_game', '-current_viewers']))
-            const channelsByGame = groupArrayByField(channels, 'meta_game')
-
-            // count number of viewers
-            for (let game in channelsByGame) {
-                let numViewers = 0
-                const channels = channelsByGame[game]
-                for (let i=0; i<channels.length; i++) {
-                    numViewers += channels[i].current_viewers
-                }
-                vm.viewersByGame[game] = numViewers
-            }
-
-            // set data
-            vm.channelsByGame = channelsByGame
         }
     }
 }
