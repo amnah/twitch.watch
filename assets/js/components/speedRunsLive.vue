@@ -13,7 +13,7 @@
             <a class="action" :class="{active: sortBy == 'viewers'}" @click="setSortBy('viewers')">viewers</a>
         </div>
 
-        <div v-if="srliveError" class="error">
+        <div v-show="srliveError" class="error">
             <p>
                 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
                 SpeedRunsLive is having https issues - their security certificate expired on 4/15/2017.
@@ -24,7 +24,7 @@
         </div>
 
         <div class="items">
-            <div class="scroll-list" v-if="sortBy == 'game'">
+            <div class="scroll-list" v-show="sortBy == 'game'">
                 <div v-for="(channels, game) in channelsByGame">
                     <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
                     <ul>
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <ul class="scroll-list" v-if="sortBy == 'viewers'">
+            <ul class="scroll-list" v-show="sortBy == 'viewers'">
                 <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
                     <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
                         <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
