@@ -121,7 +121,6 @@ export default {
         },
         resizeOverlay: function() {
             // resize overlay
-            const vm = this
             const $overlay = $('#overlay')
             $overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
 

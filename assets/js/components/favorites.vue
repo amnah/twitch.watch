@@ -55,11 +55,8 @@ export default {
             newUsername: '',
             lastRefresh: '',
             favoriteItemsGrouped: {},
-            favoriteItems: [],
-            showHistory: false,
             historyItemsGrouped: {},
-            historyItems: [],
-            liveData: {}
+            showHistory: false,
         }
     },
     methods: {
@@ -113,65 +110,49 @@ export default {
             items = items || getItems()
             let favoriteItems = []
             let historyItems = []
+            let usernames = []
             for (let i=0; i<items.length; i++) {
                 if (items[i].is_favorite) {
                     favoriteItems.push(items[i])
+                    usernames.unshift(items[i].username)
                 } else {
                     historyItems.push(items[i])
+                    usernames.push(items[i].username)
                 }
             }
 
-            // process items here - this is using the local data in `vm.liveData`
-            this.processItems(favoriteItems, historyItems)
-
-            // refresh live data from twitch, which will in turn call `vm.processItems()` again
-            this.getLiveData()
+            // build liveData using the usernames
+            // limit usernames to 300 because the user may have a lot of historyItems
+            // (put priority on the favorites first)
+            const vm = this
+            usernames = usernames.slice(0, 300)
+            buildLiveData(usernames).then(function(liveData) {
+                vm.processItems(favoriteItems, historyItems, liveData)
+            }, function(e) {
+                vm.processItems(favoriteItems, historyItems)
+            })
         },
-        processItems: function(favoriteItems, historyItems) {
+        processItems: function(favoriteItems, historyItems, liveData = {}) {
             // add liveData and group by game + sort
             // note: offline streams will have a game of 'null', as specified in the `twitchApi.addLiveData()` function
             //       we use that knowledge to rename/move those to the end of the object
-            favoriteItems = addLiveData(favoriteItems, this.liveData).sort(sortArray(['game', '-viewers', 'username']))
+            favoriteItems = addLiveData(favoriteItems, liveData).sort(sortArray(['game', '-viewers', 'username']))
             let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
             favoriteItemsGrouped['(offline)'] = favoriteItemsGrouped[null]
             delete favoriteItemsGrouped[null]
-            this.favoriteItems = favoriteItems
             this.favoriteItemsGrouped = favoriteItemsGrouped
 
             // add liveData and group by game + sort
-            historyItems = addLiveData(historyItems, this.liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
+            historyItems = addLiveData(historyItems, liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
             let historyItemsGrouped = groupArrayByField(historyItems, 'game')
             historyItemsGrouped['(offline)'] = historyItemsGrouped[null]
             delete historyItemsGrouped[null]
-            this.historyItems = historyItems
             this.historyItemsGrouped = historyItemsGrouped
 
             // update meta
             this.lastRefresh = getDisplayTime()
-            //this.$parent.$options.methods.resizeOverlay() // this seems to cause a weird flicker
-        },
-        getLiveData: function() {
-            // get usernames - prioritize favorite items
-            const vm = this
-            let usernames = []
-            for (let i=0; i<vm.favoriteItems.length; i++) {
-                usernames.push(vm.favoriteItems[i].username)
-            }
-            for (let i=0; i<vm.historyItems.length; i++) {
-                usernames.push(vm.historyItems[i].username)
-            }
-
-            // limit usernames to 300 because the user may have a lot of historyItems
-            // we want to focus on the favorites, not the history
-            usernames = usernames.slice(0, 300)
-
-            // build live data from twitch
-            buildLiveData(usernames).then(function(liveData) {
-                vm.liveData = liveData
-                vm.processItems(vm.favoriteItems, vm.historyItems)
-                vm.$parent.$options.methods.resizeOverlay()
-            })
-        },
+            this.$parent.$options.methods.resizeOverlay()
+        }
     }
 }
 </script>
