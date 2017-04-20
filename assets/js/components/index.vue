@@ -124,17 +124,19 @@ export default {
             const $overlay = $('#overlay')
             $overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
 
-            // resize scroll list by getting the currently visible one and doing calculations
-            const $streamList = $('.scroll-list:visible')
-            if ($streamList.length) {
-                // calculate height and make adjustments depending on which component we're in
-                let newHeight = $overlay.height() - $streamList.position().top
-                if ($streamList.closest('#srlive').length) {
-                    newHeight += 10
+            // iterate through components and calculate new heights for .scroll-list
+            const componentIds = ['#favorites', '#srlive']
+            for (let i=0; i<componentIds.length; i++) {
+                const $scrollListVisible = $(componentIds[i]).find('.scroll-list:visible')
+                if ($scrollListVisible.length) {
+                    // calculate height based on the currently visible .scroll-list
+                    // then make adjustments based depending on the component (via eye-balling ...)
+                    let newHeight = $overlay.height() - $scrollListVisible.position().top
+                    if (componentIds[i] === '#srlive') {
+                        newHeight += 12
+                    }
+                    $(componentIds[i]).find('.scroll-list').css('height', newHeight)
                 }
-
-                // apply to all elements
-                $('.scroll-list').css('height', newHeight)
             }
         },
         setPage: function(page) {

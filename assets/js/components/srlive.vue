@@ -13,17 +13,17 @@
             <a class="action" :class="{active: sortBy == 'viewers'}" @click="setSortBy('viewers')">viewers</a>
         </div>
 
-        <div v-show="srliveError" class="error">
-            <p>
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                SpeedRunsLive is having https issues - their security certificate expired on 4/15/2017.
-            </p>
-            <p>For now, please go to the following link and click on <em>"Advanced"</em> to make an exception</p>
-            <p><a href="https://api.speedrunslive.com/frontend/streams" target="_blank">https://api.speedrunslive.com/frontend/streams</a></p>
-            <p class="action" @click="getStreams()">Refresh <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></p>
-        </div>
-
         <div class="items">
+            <div class="error scroll-list" v-show="srliveError">
+                <p>
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    SpeedRunsLive is having https issues - their security certificate expired on 4/15/2017.
+                </p>
+                <p>For now, please go to the following link and click on <em>"Advanced"</em> to make an exception</p>
+                <p><a href="https://api.speedrunslive.com/frontend/streams" target="_blank">https://api.speedrunslive.com/frontend/streams</a></p>
+                <p class="action" @click="getStreams()">Refresh <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></p>
+            </div>
+
             <div class="scroll-list" v-show="sortBy == 'game'">
                 <div v-for="(channels, game) in channelsByGame">
                     <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
@@ -99,6 +99,9 @@ export default {
             $.ajax({
                 url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
+                // set error false
+                vm.srliveError = false
+
                 // prep channels for filter comparison
                 let channels = data._source.channels
                 for (let i=0; i<channels.length; i++) {
@@ -128,7 +131,6 @@ export default {
                 // update refresh time and resize overlay
                 vm.lastRefresh = getDisplayTime()
                 vm.$parent.$options.methods.resizeOverlay()
-                vm.srliveError = false
             }, function() {
                 vm.srliveError = true
             })
