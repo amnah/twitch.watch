@@ -124,13 +124,17 @@ export default {
             const $overlay = $('#overlay')
             $overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
 
-            // resize scroll list
-            // @link http://stackoverflow.com/questions/13075920/add-css-rule-via-jquery-for-future-created-elements/34293036#34293036
+            // resize scroll list by getting the currently visible one and doing calculations
             const $streamList = $('.scroll-list:visible')
             if ($streamList.length) {
+                // calculate height and make adjustments depending on which component we're in
                 let newHeight = $overlay.height() - $streamList.position().top
-                newHeight += 10 // add 10 to fill in a bit more
-                $('#force-style').html(`.scroll-list {height: ${newHeight}px !important;}`)
+                if ($streamList.closest('#srlive').length) {
+                    newHeight += 10
+                }
+
+                // apply to all elements
+                $('.scroll-list').css('height', newHeight)
             }
         },
         setPage: function(page) {
