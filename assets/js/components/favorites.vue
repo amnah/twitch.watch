@@ -2,7 +2,7 @@
 <template>
     <div id="favorites">
 
-        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getAndDisplayItems()">
+        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getItems()">
             {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
@@ -21,8 +21,8 @@
                 <ul>
                     <li v-for="item in items">
                         <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
-                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
-                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        <router-link class="channel indented" :to="'/' + item.username" :title="displayChannelTitle(item)">
+                            {{ displayViewers(item) }} {{ item.display_name || item.username }}
                         </router-link>
                     </li>
                 </ul>
@@ -35,8 +35,8 @@
                     <li v-for="item in items">
                         <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
                         <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
-                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
-                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        <router-link class="channel indented" :to="'/' + item.username" :title="displayChannelTitle(item)">
+                            {{ displayViewers(item) }} {{ item.display_name || item.username }}
                         </router-link>
                     </li>
                 </ul>
@@ -81,9 +81,9 @@ export default {
                     items = updateItemByUsername(usernames[i], 1)
                 }
             }
-            this.getAndDisplayItems(items)
+            this.getItems(items)
         },
-        getChannelTitle: function(item) {
+        displayChannelTitle: function(item) {
             const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
             let title = `${item.num_viewed} views - last viewed ${displayTime}`
             if (item.status) {
@@ -91,7 +91,7 @@ export default {
             }
             return title
         },
-        getViewers: function(item) {
+        displayViewers: function(item) {
             if (item.viewers >= 0) {
                 return `[${item.viewers}]`
             }
@@ -100,12 +100,12 @@ export default {
         removeItem: function(username) {
             console.log(`Removing item [ ${username} ]`)
             const items = removeItemByUsername(username)
-            this.getAndDisplayItems(items)
+            this.getItems(items)
         },
         refresh: function() {
-            this.getAndDisplayItems()
+            this.getItems()
         },
-        getAndDisplayItems: function(items) {
+        getItems: function(items) {
             // filter favorites and history items
             items = items || getItems()
             let favoriteItems = []

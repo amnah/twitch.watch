@@ -114,6 +114,10 @@ export function getStreamsByUsernames(usernames) {
     const channels1 = chunks[1] ? getStreamsV3(chunks[1]) : []
     const channels2 = chunks[2] ? getStreamsV3(chunks[2]) : []
     return $.when(channels0, channels1, channels2).then(function(streams0, streams1, streams2) {
+        // fix streams (twitch can return null if no streams are online)
+        streams0 = streams0 || []
+        streams1 = streams1 || []
+        streams2 = streams2 || []
         return streams0.concat(streams1).concat(streams2)
     });
 
@@ -126,6 +130,10 @@ export function getStreamsByUsernames(usernames) {
     const chunk2 = chunks[2] ? getUserIds(chunks[2]) : []
     return $.when(chunk0, chunk1, chunk2).then(function(userIds0, userIds1, userIds2) {
         return $.when(getStreams(userIds0), getStreams(userIds1), getStreams(userIds2)).then(function(streams0, streams1, streams2) {
+            // fix streams (twitch can return null if no streams are online)
+            streams0 = streams0 || []
+            streams1 = streams1 || []
+            streams2 = streams2 || []
             return streams0.concat(streams1).concat(streams2)
         });
     })
