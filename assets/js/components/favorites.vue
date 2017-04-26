@@ -151,7 +151,7 @@ export default {
 
             // update meta
             this.lastRefresh = getDisplayTime()
-            this.$parent.$options.methods.resizeOverlay()
+            this.$emit('resizeOverlay')
         }
     }
 }

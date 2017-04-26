@@ -1,156 +1,157 @@
 
 <template>
-    <div id="speedrunslive">
+    <div id="twitch">
+
+        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getAndDisplayItems()">
+            {{ lastRefresh }}
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </span>
+        <form role="form" @submit.prevent="addFavorite()">
+            <input placeholder="(twitch username)" v-model.trim="newUsername">
+            <a class="action" @click="addFavorite()">add</a>
+        </form>
+
+        <!--
         <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
-        <a class="action" href="javascript:void(0)" @click="getStreams()">refresh</a>
-        <strong class="last-refreshed" title="last refreshed at">{{ lastRefresh }}</strong>
+        -->
 
-        <div class="sort-by">
-            <strong>Sort by:</strong>
-            <a class="action" :class="{active: sortBy == 'viewers'}" href="javascript:void(0)" @click="setSortBy('viewers')">viewers</a>
-            <a class="action" :class="{active: sortBy == 'game'}" href="javascript:void(0)" @click="setSortBy('game')">game</a>
-        </div>
-
-        <div class="items">
-            <div class="scroll-list" v-if="sortBy == 'game'">
-                <div v-for="(channels, game) in channelsByGame">
-                    <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
-                    <ul>
-                        <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
-                            <router-link class="channel indented" :to="'/' + channel.name" :title="channel.title">
-                                <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
-                            </router-link>
-                        </li>
-                    </ul>
-                </div>
+        <div class="items scroll-list">
+            <div v-for="(items, game) in favoriteItemsGrouped">
+                <div class="game">{{ game || '(No game set)' }}</div>
+                <ul>
+                    <li v-for="item in items">
+                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
+                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
+                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        </router-link>
+                    </li>
+                </ul>
             </div>
 
-            <ul class="scroll-list" v-if="sortBy == 'viewers'">
-                <li class="viewers" v-show="showChannel(channel)" v-for="(channel, i) in channelsByViewers">
-                    <router-link class="channel" :to="'/' + channel.name" :title="channel.title">
-                        <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
-                    <div class="game indented">{{ channel.meta_game }}</div>
-                    </router-link>
-                </li>
-            </ul>
+            <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
+            <div v-show="showHistory" v-for="(items, game) in historyItemsGrouped">
+                <div class="game">{{ game || '(No game set)' }}</div>
+                <ul>
+                    <li v-for="item in items">
+                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
+                        <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
+                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
+                            {{ getViewers(item) }} {{ item.display_name || item.username }}
+                        </router-link>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import {getDisplayTime, sortArray, prepStringForCompare} from '../functions.js'
-import twitchApi from '../twitchApi.js'
+import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
+import {buildLiveData, addLiveData} from '../twitchApi.js'
 export default {
     name: 'twitch',
     data: function() {
         return {
+            newUsername: '',
             lastRefresh: '',
-            filter: '',
-            filterPreppedForCompare: '',
-            sortBy: 'viewers',
-            channelsByGame: {},
-            channelsByViewers: [],
-            viewersByGame: {}
+            favoriteItemsGrouped: {},
+            historyItemsGrouped: {},
+            showHistory: false,
         }
     },
-    mounted: function() {
-        this.getStreams()
-
-        twitchApi.get('games/top', {offset: 0, limit: 100}).then(function(data) {
-            console.log('0', data)
-        })
-//        twitchApi.get('games/top', {offset: 100, limit: 100}).then(function(data) {
-//            console.log('1', data)
-//        })
-//        twitchApi.get('games/top', {offset: 200, limit: 100}).then(function(data) {
-//            console.log('2', data)
-//        })
-        // games/top?offset="+offset+"&limit=25
-        // streams?game="+game+"&offset="+offset+"&limit=25", # need to urlencode
-        // /search/streams?q="+searchText # channel names???
-    },
     methods: {
-        setSortBy: function(by) {
-            this.sortBy = by
-            this.focusFilter()
-        },
-        prepFilterForCompare: function() {
-            this.filterPreppedForCompare = prepStringForCompare(this.filter)
-        },
-        showGame: function(game) {
-            if (!this.filterPreppedForCompare) {
-                return true
+        addFavorite: function(username) {
+
+            // get username from function parameter or text input
+            let usernames = username
+            if (!usernames) {
+                usernames = this.newUsername
+                this.newUsername = ''
             }
 
-            // concatenate all channels under this game
-            let haystack = ''
-            const channels = this.channelsByGame[game]
-            for (let i=0; i<channels.length; i++) {
-                haystack += channels[i].filterHaystack
+            // ensure that we have a proper username - lowercase alphanumerics only + underscore
+            // then separate by comma for batch processing
+            usernames = usernames.replace(/[^a-z0-9_,]/gi,'').toLowerCase().split(',')
+
+            // add usernames and update list
+            let items
+            for (let i=0; i<usernames.length; i++) {
+                // check for username
+                if (usernames[i]) {
+                    items = updateItemByUsername(usernames[i], 1)
+                }
             }
-            return haystack.indexOf(this.filterPreppedForCompare) >= 0
+            this.getAndDisplayItems(items)
         },
-        showChannel: function(channel) {
-            if (!this.filterPreppedForCompare) {
-                return true
+        getChannelTitle: function(item) {
+            const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
+            let title = `${item.num_viewed} views - last viewed ${displayTime}`
+            if (item.status) {
+                title = `${item.status}\n\n${title}`
             }
-            return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
+            return title
         },
-        focusFilter: function() {
-            // lets not focus for now, it's annoying
-            return
-            $('#speedrunslive-filter').focus()
+        getViewers: function(item) {
+            if (item.viewers >= 0) {
+                return `[${item.viewers}]`
+            }
+            return `-`
+        },
+        removeItem: function(username) {
+            console.log(`Removing item [ ${username} ]`)
+            const items = removeItemByUsername(username)
+            this.getAndDisplayItems(items)
         },
         refresh: function() {
-            this.getStreams()
+            this.getAndDisplayItems()
         },
-        getStreams: function() {
-            const vm = this
-            $.ajax({
-                url: 'https://api.speedrunslive.com/frontend/streams'
-            }).then(function(data) {
-                // prep channels for filter comparison
-                let channels = data._source.channels
-                for (let i=0; i<channels.length; i++) {
-                    const channel = channels[i]
-                    channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
+        getAndDisplayItems: function(items) {
+            // filter favorites and history items
+            items = items || getItems()
+            let favoriteItems = []
+            let historyItems = []
+            let usernames = []
+            for (let i=0; i<items.length; i++) {
+                if (items[i].is_favorite) {
+                    favoriteItems.push(items[i])
+                    usernames.unshift(items[i].username)
+                } else {
+                    historyItems.push(items[i])
+                    usernames.push(items[i].username)
                 }
+            }
 
-                // sort by viewers desc
-                channels = sortArray(channels, 'current_viewers').reverse()
-                vm.channelsByViewers = channels
-
-                // sort by games
-                vm.processChannelsByGame(channels)
-
-                // update refresh time and focus on the filter
-                vm.lastRefresh = getDisplayTime()
-                vm.focusFilter()
+            // build liveData using the usernames
+            // limit usernames to 300 because the user may have a lot of historyItems
+            // (put priority on the favorites first)
+            const vm = this
+            usernames = usernames.slice(0, 300)
+            buildLiveData(usernames).then(function(liveData) {
+                vm.processItems(favoriteItems, historyItems, liveData)
+            }, function(e) {
+                vm.processItems(favoriteItems, historyItems)
             })
         },
-        processChannelsByGame: function(channels) {
-            // sort channels by game
-            const vm = this
-            let channelsByGame = {}
-            channels = sortArray(channels, 'meta_game')
-            for (let i=0; i<channels.length; i++) {
-                const channel = channels[i]
-                channelsByGame[channel.meta_game] = channelsByGame[channel.meta_game] || []
-                channelsByGame[channel.meta_game].push(channel)
-            }
+        processItems: function(favoriteItems, historyItems, liveData = {}) {
+            // add liveData and group by game + sort
+            // note: offline streams will have a game of 'null', as specified in the `twitchApi.addLiveData()` function
+            //       we use that knowledge to rename/move those to the end of the object
+            favoriteItems = addLiveData(favoriteItems, liveData).sort(sortArray(['game', '-viewers', 'username']))
+            let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
+            favoriteItemsGrouped['(offline)'] = favoriteItemsGrouped[null]
+            delete favoriteItemsGrouped[null]
+            this.favoriteItemsGrouped = favoriteItemsGrouped
 
-            // count number of viewers
-            for (let game in channelsByGame) {
-                let numViewers = 0
-                const channels = channelsByGame[game]
-                for (let i=0; i<channels.length; i++) {
-                    numViewers += channels[i].current_viewers
-                }
-                vm.viewersByGame[game] = numViewers
-            }
+            // add liveData and group by game + sort
+            historyItems = addLiveData(historyItems, liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
+            let historyItemsGrouped = groupArrayByField(historyItems, 'game')
+            historyItemsGrouped['(offline)'] = historyItemsGrouped[null]
+            delete historyItemsGrouped[null]
+            this.historyItemsGrouped = historyItemsGrouped
 
-            // set data
-            vm.channelsByGame = channelsByGame
+            // update meta
+            this.lastRefresh = getDisplayTime()
+            this.$emit('resizeOverlay')
         }
     }
 }

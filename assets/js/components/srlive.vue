@@ -130,7 +130,7 @@ export default {
 
                 // update refresh time and resize overlay
                 vm.lastRefresh = getDisplayTime()
-                vm.$parent.$options.methods.resizeOverlay()
+                vm.$emit('resizeOverlay')
             }, function() {
                 vm.srliveError = true
             })

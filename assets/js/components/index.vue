@@ -16,10 +16,10 @@
                 </li>
             </ul>
 
-            <favorites v-show="currentPage == 'favorites'" ref="favorites"></favorites>
-            <!--<twitch v-show="currentPage == 'twitch'" ref="twitch"></twitch>-->
-            <srlive v-show="currentPage == 'srlive'" ref="srlive"></srlive>
-            <about v-show="currentPage == 'about'" ref="about"></about>
+            <favorites v-show="currentPage == 'favorites'" ref="favorites" v-on:resizeOverlay="resizeOverlay"></favorites>
+            <twitch v-show="currentPage == 'twitch'" ref="twitch" v-on:resizeOverlay="resizeOverlay"></twitch>
+            <srlive v-show="currentPage == 'srlive'" ref="srlive" v-on:resizeOverlay="resizeOverlay"></srlive>
+            <about v-show="currentPage == 'about'" ref="about" v-on:resizeOverlay="resizeOverlay"></about>
         </div>
 
         <!-- twitch player -->
@@ -40,7 +40,7 @@ export default {
         about: require('./about.vue')
     },
     data: function() {
-        const pages = ['favorites', /*'twitch',*/ 'srlive', 'about']
+        const pages = ['favorites', 'twitch', 'srlive', 'about']
         return {
             $streamIframeDiv: null,
             player: null,
@@ -124,18 +124,20 @@ export default {
             const $overlay = $('#overlay')
             $overlay.height($(window).height() - 150) // this was chosen by randomly testing numbers
 
-            // iterate through components and calculate new heights for .scroll-list
-            const componentIds = ['#favorites', '#srlive']
-            for (let i=0; i<componentIds.length; i++) {
-                const $scrollListVisible = $(componentIds[i]).find('.scroll-list:visible')
+            // iterate through pages and calculate new heights for .scroll-list
+            for (let i=0; i<this.pages.length; i++) {
+                const componentId = `#${this.pages[i]}`
+                const $scrollListVisible = $(componentId).find('.scroll-list:visible')
                 if ($scrollListVisible.length) {
                     // calculate height based on the currently visible .scroll-list
                     // then make adjustments based depending on the component (via eye-balling ...)
                     let newHeight = $overlay.height() - $scrollListVisible.position().top
-                    if (componentIds[i] === '#srlive') {
+                    if (componentId === '#srlive') {
                         newHeight += 12
                     }
-                    $(componentIds[i]).find('.scroll-list').css('height', newHeight)
+
+                    // adjust ALL .scroll-list elements in the page
+                    $(componentId).find('.scroll-list').css('height', newHeight)
                 }
             }
         },
