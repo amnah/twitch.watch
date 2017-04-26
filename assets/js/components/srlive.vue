@@ -26,7 +26,7 @@
 
             <div class="scroll-list" v-show="sortBy == 'game'">
                 <div v-for="(channels, game) in channelsByGame">
-                    <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ viewersByGame[game] }}]</div>
+                    <div class="game" v-show="showGame(game)">{{ game || '(No game set)' }} [{{ displayGameViewers(game) }}]</div>
                     <ul>
                         <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
                             <router-link class="channel indented" :to="'/' + channel.name" :title="channel.title">
@@ -50,7 +50,8 @@
 </template>
 
 <script>
-import {getDisplayTime, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
+import {getDisplayTime, arrayPluck, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
+import {buildLiveData} from '../twitchApi.js'
 export default {
     name: 'srlive',
     data: function() {
@@ -62,7 +63,6 @@ export default {
             srliveError: false,
             channelsByGame: {},
             channelsByViewers: [],
-            viewersByGame: {}
         }
     },
     methods: {
@@ -91,6 +91,14 @@ export default {
             }
             return channel.filterHaystack.indexOf(this.filterPreppedForCompare) >= 0
         },
+        displayGameViewers: function(game) {
+            let numViewers = 0
+            const channels = this.channelsByGame[game]
+            for (let i=0; i<channels.length; i++) {
+                numViewers += channels[i].current_viewers
+            }
+            return numViewers
+        },
         refresh: function() {
             this.getStreams()
         },
@@ -99,14 +107,24 @@ export default {
             $.ajax({
                 url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
-                // set error false
                 vm.srliveError = false
-
-                // prep channels for filter comparison
-                let channels = data._source.channels
-                for (let i=0; i<channels.length; i++) {
-                    const channel = channels[i]
-                    channel.filterHaystack = prepStringForCompare(channel.display_name + channel.meta_game + channel.name + channel.title + channel.user_name)
+                let usernames = arrayPluck(data._source.channels, 'name')
+                return buildLiveData(usernames)
+            }, function() {
+                vm.srliveError = true
+            }).then(function(liveData) {
+                const channels = []
+                const usernames = Object.keys(liveData)
+                for (let i=0; i<usernames.length; i++) {
+                    const channelData = liveData[usernames[i]]
+                    channels.push({
+                        name: usernames[i],
+                        filterHaystack: prepStringForCompare(usernames[i] + channelData.game + channelData.display_name + channelData.status),
+                        meta_game: channelData.game,
+                        current_viewers: channelData.viewers,
+                        display_name: channelData.display_name,
+                        title: channelData.status,
+                    });
                 }
 
                 // sort by viewers desc
@@ -118,21 +136,9 @@ export default {
                 channelsByGame = groupArrayByField(channelsByGame, 'meta_game')
                 vm.channelsByGame = channelsByGame
 
-                // count number of viewers
-                for (let game in channelsByGame) {
-                    let numViewers = 0
-                    const channels = channelsByGame[game]
-                    for (let i=0; i<channels.length; i++) {
-                        numViewers += channels[i].current_viewers
-                    }
-                    vm.viewersByGame[game] = numViewers
-                }
-
                 // update refresh time and resize overlay
                 vm.lastRefresh = getDisplayTime()
                 vm.$emit('resizeOverlay')
-            }, function() {
-                vm.srliveError = true
             })
         }
     }
