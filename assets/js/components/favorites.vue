@@ -3,7 +3,7 @@
     <div id="favorites">
 
         <span class="last-refreshed action pull-right" title="last refreshed at" @click="getItems()">
-            {{ lastRefresh }}
+            {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
         <form role="form" @submit.prevent="addFavorite()">
@@ -53,6 +53,7 @@ export default {
     data: function() {
         return {
             newUsername: '',
+            loading: false,
             lastRefresh: '',
             favoriteItemsGrouped: {},
             historyItemsGrouped: {},
@@ -126,9 +127,11 @@ export default {
             // (put priority on the favorites first)
             const vm = this
             usernames = usernames.slice(0, 300)
+            vm.loading = true
             buildLiveData(usernames).then(function(liveData) {
                 vm.processItems(favoriteItems, historyItems, liveData)
             }, function(e) {
+                console.log('error', e)
                 vm.processItems(favoriteItems, historyItems)
             })
         },
@@ -150,6 +153,7 @@ export default {
             this.historyItemsGrouped = historyItemsGrouped
 
             // update meta
+            this.loading = false
             this.lastRefresh = getDisplayTime()
             this.$emit('resizeOverlay')
         }

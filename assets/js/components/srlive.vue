@@ -3,7 +3,7 @@
     <div id="srlive">
         <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
         <span class="last-refreshed action pull-right" title="last refreshed at" @click="getStreams()">
-            {{ lastRefresh }}
+            {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
 
@@ -56,6 +56,7 @@ export default {
     name: 'srlive',
     data: function() {
         return {
+            loading: false,
             lastRefresh: '',
             filter: '',
             filterPreppedForCompare: '',
@@ -104,6 +105,7 @@ export default {
         },
         getStreams: function() {
             const vm = this
+            vm.loading = true
             $.ajax({
                 url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
@@ -137,6 +139,7 @@ export default {
                 vm.channelsByGame = channelsByGame
 
                 // update refresh time and resize overlay
+                vm.loading = false
                 vm.lastRefresh = getDisplayTime()
                 vm.$emit('resizeOverlay')
             })
