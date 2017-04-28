@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import {setPageTitle, updateItemByUsername} from '../functions.js'
+import {setPageTitle, getHistoryItems, updateHistoryItemByUsername} from '../functions.js'
 export default {
     name: 'index',
     components: {
@@ -40,13 +40,23 @@ export default {
         about: require('./about.vue')
     },
     data: function() {
+        // determine starting page depending on whether user has favorites or not
+        const historyItems = getHistoryItems()
+        let startPage = 'twitch'
+        for (let i=0; i<historyItems.length; i++) {
+            if (historyItems[i].is_favorite) {
+                startPage = 'favorites'
+                break
+            }
+        }
+
         const pages = ['favorites', 'twitch', 'srlive', 'about']
         return {
             $streamIframeDiv: null,
             player: null,
             username: '',
             pages: pages,
-            currentPage: pages[0]
+            currentPage: startPage
         }
     },
     mounted: function() {
@@ -149,7 +159,7 @@ export default {
         },
         viewStream: function(username) {
             setPageTitle(username)
-            updateItemByUsername(username)
+            updateHistoryItemByUsername(username)
             this.username = username
 
             // set channel or create twitch player
