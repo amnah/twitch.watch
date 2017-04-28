@@ -4,14 +4,15 @@ import {getConfig, arrayPluck} from './functions.js'
 // --------------------------------------------------------
 // Twitch settings and helper functions
 // --------------------------------------------------------
-function twitchUrl() {
-    return 'https://api.twitch.tv/kraken/'
-}
+
+const twitchUrl = 'https://api.twitch.tv/kraken/'
+const twitchVersion = 'v3'
+
 function twitchConfig() {
     return {
         headers: {
             'Client-ID': getConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
-            'Accept': 'application/vnd.twitchtv.v3+json'
+            'Accept': `application/vnd.twitchtv.${twitchVersion}+json`
         }
     }
 }
@@ -29,7 +30,7 @@ function failureCallback(data) {
 
 export function getTwitch(url, data) {
     const params = $.extend(twitchConfig(), {
-        url: twitchUrl() + url,
+        url: twitchUrl + url,
         method: 'GET',
         data: data
     });
@@ -37,7 +38,7 @@ export function getTwitch(url, data) {
 }
 
 // --------------------------------------------------------
-// Application functions
+// Application functions - live streams by usernames
 // --------------------------------------------------------
 
 // v5
@@ -110,18 +111,19 @@ export function getStreamsByUsernames(usernames) {
 
     // twitch v3
     // make concurrent ajax calls if needed
-    const channels0 = getStreamsV3(chunks[0])
-    const channels1 = chunks[1] ? getStreamsV3(chunks[1]) : []
-    const channels2 = chunks[2] ? getStreamsV3(chunks[2]) : []
-    return $.when(channels0, channels1, channels2).then(function(streams0, streams1, streams2) {
-        // fix streams (twitch can return null if no streams are online)
-        streams0 = streams0 || []
-        streams1 = streams1 || []
-        streams2 = streams2 || []
-        return streams0.concat(streams1).concat(streams2)
-    });
+    if (twitchVersion === 'v3') {
+        const channels0 = getStreamsV3(chunks[0])
+        const channels1 = chunks[1] ? getStreamsV3(chunks[1]) : []
+        const channels2 = chunks[2] ? getStreamsV3(chunks[2]) : []
+        return $.when(channels0, channels1, channels2).then(function(streams0, streams1, streams2) {
+            // fix streams (twitch can return null if no streams are online)
+            streams0 = streams0 || []
+            streams1 = streams1 || []
+            streams2 = streams2 || []
+            return streams0.concat(streams1).concat(streams2)
+        });
+    }
 
-    /*
     // twitch v5
     // make concurrent ajax calls if needed
     // use the usernames to get userIds, then use those userIds to get the streams
@@ -137,7 +139,6 @@ export function getStreamsByUsernames(usernames) {
             return streams0.concat(streams1).concat(streams2)
         });
     })
-    */
 }
 
 export function buildLiveData(usernames) {
@@ -165,4 +166,19 @@ export function addLiveData(items, liveData) {
         items[i].status = liveDataForUser ? liveDataForUser.status : null
     }
     return items
+}
+
+// --------------------------------------------------------
+// Application functions - games
+// --------------------------------------------------------
+export function searchTopGames(offset = 0) {
+    return getTwitch('games/top', {limit: 100, offset: offset}).then(function(data) {
+        return data.top
+    })
+}
+
+export function searchGames(query) {
+    return getTwitch('search/games', {query: query, type: 'suggest'}).then(function(data) {
+        return data.games
+    })
 }

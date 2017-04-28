@@ -2,156 +2,76 @@
 <template>
     <div id="twitch">
 
-        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getAndDisplayItems()">
-            {{ lastRefresh }}
+        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getGameItems()">
+            {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
-        <form role="form" @submit.prevent="addFavorite()">
-            <input placeholder="(twitch username)" v-model.trim="newUsername">
-            <a class="action" @click="addFavorite()">add</a>
+
+        <form role="form" @submit.prevent="getGameItems()">
+            <input placeholder="(search game)" v-model.trim="gameQuery">
         </form>
 
-        <!--
-        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
-        -->
-
         <div class="items scroll-list">
-            <div v-for="(items, game) in favoriteItemsGrouped">
-                <div class="game">{{ game || '(No game set)' }}</div>
-                <ul>
-                    <li v-for="item in items">
-                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
-                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
-                            {{ getViewers(item) }} {{ item.display_name || item.username }}
-                        </router-link>
-                    </li>
-                </ul>
+            <div class="game" v-for="(game, i) in games">
+                <span class="game-viewers">[{{ game.popularity }}]</span>
+                <div class="indented">{{ game.name }}</div>
             </div>
-
-            <p id="show-history" class="action" @click="showHistory = !showHistory">show history</p>
-            <div v-show="showHistory" v-for="(items, game) in historyItemsGrouped">
-                <div class="game">{{ game || '(No game set)' }}</div>
-                <ul>
-                    <li v-for="item in items">
-                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from history\n\nPERMANENT PERMANENT PERMANENT`" @click="removeItem(item.username)"></span>
-                        <span class="action glyphicon glyphicon-star pull-right" aria-hidden="true" :title="`add favorite [${item.username}]`" @click="addFavorite(item.username)"></span>
-                        <router-link class="channel indented" :to="'/' + item.username" :title="getChannelTitle(item)">
-                            {{ getViewers(item) }} {{ item.display_name || item.username }}
-                        </router-link>
-                    </li>
-                </ul>
+            <div class="text-center" v-if="allowLoadMore">
+                <a class="action" @click="getMoreGameItems">load more</a>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
-import {buildLiveData, addLiveData} from '../twitchApi.js'
+import {sortArray, groupArrayByField, getDisplayTime} from '../functions.js'
+import {searchTopGames, searchGames} from '../twitchApi.js'
 export default {
     name: 'twitch',
     data: function() {
         return {
-            newUsername: '',
+            loading: false,
             lastRefresh: '',
-            favoriteItemsGrouped: {},
-            historyItemsGrouped: {},
-            showHistory: false,
+            gameQuery: '',
+            allowLoadMore: false,
+            games: [],
         }
     },
     methods: {
-        addFavorite: function(username) {
-
-            // get username from function parameter or text input
-            let usernames = username
-            if (!usernames) {
-                usernames = this.newUsername
-                this.newUsername = ''
-            }
-
-            // ensure that we have a proper username - lowercase alphanumerics only + underscore
-            // then separate by comma for batch processing
-            usernames = usernames.replace(/[^a-z0-9_,]/gi,'').toLowerCase().split(',')
-
-            // add usernames and update list
-            let items
-            for (let i=0; i<usernames.length; i++) {
-                // check for username
-                if (usernames[i]) {
-                    items = updateItemByUsername(usernames[i], 1)
-                }
-            }
-            this.getAndDisplayItems(items)
-        },
-        getChannelTitle: function(item) {
-            const displayTime = new Date(item.last_viewed).toLocaleTimeString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'})
-            let title = `${item.num_viewed} views - last viewed ${displayTime}`
-            if (item.status) {
-                title = `${item.status}\n\n${title}`
-            }
-            return title
-        },
-        getViewers: function(item) {
-            if (item.viewers >= 0) {
-                return `[${item.viewers}]`
-            }
-            return `-`
-        },
-        removeItem: function(username) {
-            console.log(`Removing item [ ${username} ]`)
-            const items = removeItemByUsername(username)
-            this.getAndDisplayItems(items)
-        },
         refresh: function() {
-            this.getAndDisplayItems()
+            this.getGameItems()
         },
-        getAndDisplayItems: function(items) {
-            // filter favorites and history items
-            items = items || getItems()
-            let favoriteItems = []
-            let historyItems = []
-            let usernames = []
-            for (let i=0; i<items.length; i++) {
-                if (items[i].is_favorite) {
-                    favoriteItems.push(items[i])
-                    usernames.unshift(items[i].username)
-                } else {
-                    historyItems.push(items[i])
-                    usernames.push(items[i].username)
-                }
-            }
-
-            // build liveData using the usernames
-            // limit usernames to 300 because the user may have a lot of historyItems
-            // (put priority on the favorites first)
+        getGameItems: function() {
+            // allow user to load more if we're searching for top games
+            // (searching for games by query doesn't have pagination)
             const vm = this
-            usernames = usernames.slice(0, 300)
-            buildLiveData(usernames).then(function(liveData) {
-                vm.processItems(favoriteItems, historyItems, liveData)
-            }, function(e) {
-                vm.processItems(favoriteItems, historyItems)
+            vm.allowLoadMore = vm.gameQuery ? false : true
+
+            // make api based on whether or not we have a gameQuery
+            const apiCall = vm.gameQuery ? searchGames(vm.gameQuery) : searchTopGames()
+            apiCall.then(function(games) {
+                // format data (we get different data depending on 'searchGames' and 'searchTopGames'
+                vm.games = vm.formatGameData(games)
+                vm.loading = false
+                vm.lastRefresh = getDisplayTime()
+                vm.$emit('resizeOverlay')
             })
         },
-        processItems: function(favoriteItems, historyItems, liveData = {}) {
-            // add liveData and group by game + sort
-            // note: offline streams will have a game of 'null', as specified in the `twitchApi.addLiveData()` function
-            //       we use that knowledge to rename/move those to the end of the object
-            favoriteItems = addLiveData(favoriteItems, liveData).sort(sortArray(['game', '-viewers', 'username']))
-            let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
-            favoriteItemsGrouped['(offline)'] = favoriteItemsGrouped[null]
-            delete favoriteItemsGrouped[null]
-            this.favoriteItemsGrouped = favoriteItemsGrouped
-
-            // add liveData and group by game + sort
-            historyItems = addLiveData(historyItems, liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
-            let historyItemsGrouped = groupArrayByField(historyItems, 'game')
-            historyItemsGrouped['(offline)'] = historyItemsGrouped[null]
-            delete historyItemsGrouped[null]
-            this.historyItemsGrouped = historyItemsGrouped
-
-            // update meta
-            this.lastRefresh = getDisplayTime()
-            this.$emit('resizeOverlay')
+        formatGameData: function(games) {
+            for (let i=0; i<games.length; i++) {
+                if (games[i].game) {
+                    games[i].name = games[i].game.name
+                    games[i].popularity = games[i].viewers
+                }
+            }
+            return games
+        },
+        getMoreGameItems: function() {
+            const vm = this
+            searchTopGames(this.games.length).then(function(games) {
+                games = vm.formatGameData(games)
+                vm.games = vm.games.concat(games)
+            })
         }
     }
 }

@@ -159,6 +159,17 @@ html, body {
   margin-left: 0 !important;
 }
 
+#twitch .items {
+  margin-top: 12px;
+}
+#twitch .items .game {
+  //height: 40px;
+}
+#twitch .game-viewers {
+  float: left;
+  width: 60px;
+}
+
 #about {
   font-weight: bold;
 }
