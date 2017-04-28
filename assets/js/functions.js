@@ -209,7 +209,7 @@ for (let i=0; i<defaultDiacriticsRemovalMap.length; i++){
 // Favorites / History functions
 // --------------------------------------------------------
 const localStorageKey = 'items'
-export function getItems() {
+export function getHistoryItems() {
     // attempt to load data from localStorage
     let items
     try {
@@ -219,11 +219,11 @@ export function getItems() {
     return items
 }
 
-export function updateItemByUsername(username, isFavorite) {
+export function updateHistoryItemByUsername(username, isFavorite) {
     // get or create user data based on username
     let userIndex = null
     let userData = null
-    let items = getItems()
+    let items = getHistoryItems()
     const currentTime = new Date().getTime()
     for (let i=0; i<items.length; i++) {
         if (items[i].username === username) {
@@ -247,10 +247,10 @@ export function updateItemByUsername(username, isFavorite) {
     return items
 }
 
-export function removeItemByUsername(username) {
+export function removeHistoryItemByUsername(username) {
     // find element by username
     let userIndex = -1
-    let items = getItems()
+    let items = getHistoryItems()
     for (let i=0; i<items.length; i++) {
         if (items[i].username === username) {
             userIndex = i

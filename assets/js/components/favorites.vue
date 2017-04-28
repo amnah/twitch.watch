@@ -11,10 +11,6 @@
             <a class="action" @click="addFavorite()">add</a>
         </form>
 
-        <!--
-        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
-        -->
-
         <div class="items scroll-list">
             <div v-for="(items, game) in favoriteItemsGrouped">
                 <div class="game">{{ game || '(No game set)' }}</div>
@@ -46,7 +42,7 @@
 </template>
 
 <script>
-import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getItems, updateItemByUsername, removeItemByUsername} from '../functions.js'
+import {sortArray, groupArrayByField, prepStringForCompare, getDisplayTime, getHistoryItems, updateHistoryItemByUsername, removeHistoryItemByUsername} from '../functions.js'
 import {buildLiveData, addLiveData} from '../twitchApi.js'
 export default {
     name: 'favorites',
@@ -79,7 +75,7 @@ export default {
             for (let i=0; i<usernames.length; i++) {
                 // check for username
                 if (usernames[i]) {
-                    items = updateItemByUsername(usernames[i], 1)
+                    items = updateHistoryItemByUsername(usernames[i], 1)
                 }
             }
             this.getItems(items)
@@ -100,7 +96,7 @@ export default {
         },
         removeItem: function(username) {
             console.log(`Removing item [ ${username} ]`)
-            const items = removeItemByUsername(username)
+            const items = removeHistoryItemByUsername(username)
             this.getItems(items)
         },
         refresh: function() {
@@ -108,7 +104,7 @@ export default {
         },
         getItems: function(items) {
             // filter favorites and history items
-            items = items || getItems()
+            items = items || getHistoryItems()
             let favoriteItems = []
             let historyItems = []
             let usernames = []
