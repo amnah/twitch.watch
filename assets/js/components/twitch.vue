@@ -35,8 +35,11 @@
                 <li v-for="(stream, i) in streams">
                     <router-link class="channel" :to="'/' + stream.channel.name" :title="stream.channel.status">
                         <img :src="displayStreamLogo(stream)">
-                        <span :title="`${stream.viewers} current viewers`">[{{ stream.viewers }}]</span>
-                        {{ stream.channel.display_name }}
+                        <div>
+                            <span :title="`${stream.viewers} current viewers`">[{{ stream.viewers }}]</span>
+                            {{ stream.channel.display_name }}<br/>
+                            <span class="game subgame">{{ stream.game.substring(0, 30) }}</span>
+                            </div>
                     </router-link>
 
                 </li>
