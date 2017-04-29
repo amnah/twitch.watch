@@ -7,14 +7,14 @@
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
 
-        <form role="form" @submit.prevent="getGameItems()">
+        <form role="form" @submit.prevent="refresh()">
             <input :placeholder="`(search ${searchBy})`" v-model.trim="query">
         </form>
 
         <div class="sort-by">
             <strong>Search:</strong>
-            <a class="action" :class="{active: searchBy == 'games'}" @click="setSearchBy('games')">games</a>
-            <a class="action" :class="{active: searchBy == 'streams'}" @click="setSearchBy('streams')">streams</a>
+            <a class="action" :class="{active: searchBy == 'game'}" @click="setSearchBy('game')">game</a>
+            <a class="action" :class="{active: searchBy == 'query'}" @click="setSearchBy('query')">query</a>
         </div>
 
         <div class="sort-by">
@@ -41,9 +41,11 @@
 
                 </li>
             </ul>
+
             <div class="load-more">
-                <a class="action" v-show="!currentGame && !currentQuery && games.length" @click="getMoreGameItems">load more games</a>
-                <a class="action" v-show="currentGame && streams.length" @click="getMoreStreamItems">load more streams</a>
+                <a class="action" v-show="searchBy == 'game' && !currentGame && !currentQuery && games.length" @click="getMoreGameItems">load more games</a>
+                <a class="action" v-show="searchBy == 'game' && currentGame && streams.length" @click="getMoreStreamsByGame">load more streams</a>
+                <a class="action" v-show="searchBy == 'query' && streams.length" @click="getMoreStreamsByQuery">load more streams</a>
             </div>
         </div>
     </div>
@@ -51,7 +53,7 @@
 
 <script>
 import {sortArray, groupArrayByField, getDisplayTime} from '../functions.js'
-import {searchTopGames, searchGames, searchStreamsByGame} from '../twitchApi.js'
+import {searchTopGames, searchGames, searchStreamsByGame, searchStreamsByQuery} from '../twitchApi.js'
 export default {
     name: 'twitch',
     data: function() {
@@ -60,7 +62,7 @@ export default {
             lastRefresh: '',
             query: '',
             currentQuery: '',
-            searchBy: 'games',
+            searchBy: 'game', // 'game' or 'query'
             games: [],
             currentGame: null,
             streams: [],
@@ -68,20 +70,22 @@ export default {
     },
     computed: {
         displayGameTitle: function() {
+            if (this.searchBy === 'query') {
+                return this.currentQuery ? `"${this.currentQuery}"` : 'please enter a query'
+            }
             if (this.currentGame) {
                 return this.currentGame.name.substring(0, 50)
             }
-            return 'Top Games'
+            return 'top games'
         }
     },
     methods: {
         setSearchBy: function(by) {
             this.searchBy = by
-            if (by === 'games') {
+            if (by === 'game') {
                 this.getGameItems()
             } else {
-                console.log('get streams')
-                //this.getStreamItems()
+                this.getStreamsByQuery()
             }
         },
         setGame: function(game) {
@@ -96,6 +100,9 @@ export default {
             return `https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_50x50.png`
         },
         refresh: function() {
+            if (this.searchBy === 'query') {
+                return this.getStreamsByQuery()
+            }
             if (this.currentGame) {
                 this.getStreamsByGame(this.currentGame)
             } else {
@@ -153,13 +160,47 @@ export default {
                 vm.$emit('resizeOverlay')
             })
         },
-        getMoreStreamItems: function() {
+        getMoreStreamsByGame: function() {
             const vm = this
             vm.loading = true
             searchStreamsByGame(vm.currentGame.name, vm.streams.length).then(function(data) {
                 vm.streams = vm.streams.concat(data)
                 vm.loading = false
+                vm.lastRefresh = getDisplayTime()
+                vm.$emit('resizeOverlay')
             })
+        },
+        getStreamsByQuery: function() {
+            const vm = this
+            vm.games = []
+            if (!vm.query) {
+                vm.streams = []
+                return
+            }
+            vm.loading = true
+            searchStreamsByQuery(vm.query).then(function(data) {
+                vm.streams = data
+                vm.currentQuery = vm.query
+                vm.loading = false
+                vm.lastRefresh = getDisplayTime()
+                vm.$emit('resizeOverlay')
+            })
+
+        },
+        getMoreStreamsByQuery: function() {
+            const vm = this
+            vm.loading = true
+            // calculate next offset
+            // we need this to be a multiple of 100 because twitch is bugged when you send a weird offset like 95
+            // this turns 95->100, 192->200, 250->300, etc
+            const offset = (vm.streams.length+100)-(vm.streams.length%100)
+            searchStreamsByQuery(vm.currentQuery, offset).then(function(data) {
+                vm.streams = vm.streams.concat(data)
+                vm.loading = false
+                vm.lastRefresh = getDisplayTime()
+                vm.$emit('resizeOverlay')
+            })
+
         }
     }
 }
