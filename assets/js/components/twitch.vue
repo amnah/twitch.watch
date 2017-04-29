@@ -7,7 +7,7 @@
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
 
-        <form role="form" @submit.prevent="refresh()">
+        <form role="form" @submit.prevent="submit()">
             <input :placeholder="`(search ${searchBy})`" v-model.trim="query">
         </form>
 
@@ -105,6 +105,10 @@ export default {
             this.loading = false
             this.lastRefresh = getDisplayTime()
             this.$emit('resizeOverlay')
+        },
+        submit: function() {
+            this.currentGame = null
+            this.refresh()
         },
         refresh: function() {
             if (this.searchBy === 'query') {
