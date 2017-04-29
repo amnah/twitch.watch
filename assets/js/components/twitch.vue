@@ -72,6 +72,8 @@ export default {
     },
     methods: {
         setSearchBy: function(by) {
+            this.query = ''
+            this.currentQuery = ''
             this.searchBy = by
             if (by === 'game') {
                 this.getGameItems()
@@ -83,6 +85,8 @@ export default {
             // create fake game object if we're passing in a string
             if (!game.name) {
                 game = {name: game}
+                this.query = ''
+                this.currentQuery = ''
             }
             this.getStreamsByGame(game)
             this.searchBy = 'game'
