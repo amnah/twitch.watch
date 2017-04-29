@@ -90,6 +90,7 @@ export default {
         },
         displayStreamLogo: function(stream) {
             if (stream.channel.logo) {
+                // 50x50 seems to be the minimum. change actual size via css
                 return stream.channel.logo.replace('300x300', '50x50')
             }
             return `https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_50x50.png`
