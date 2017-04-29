@@ -58,6 +58,9 @@ html, body {
   text-decoration: none;
   color: yellow;
 }
+#overlay li {
+  list-style-type: none;
+}
 #overlay .error {
   margin-top: 20px;
   font-weight: bold;
@@ -159,14 +162,22 @@ html, body {
   margin-left: 0 !important;
 }
 
-#twitch .items .game {
-  //height: 40px;
+#twitch .game {
+  display: inline-block;
+  margin: 0;
 }
-#twitch .game-viewers {
-  float: left;
-  padding-right: 10px;
-  width: 60px;
+#twitch .viewers {
+  width: 55px;
+  padding-right: 5px;
   text-align: right;
+}
+#twitch .channel img {
+  width: 50px;
+  height: 50px;
+  margin: 0 10px 5px 0;
+}
+#twitch .load-more {
+  margin-left: 75px;
 }
 
 #about {

@@ -7,7 +7,7 @@
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
 
-        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
+        <input placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
 
         <div class="sort-by">
             <strong>Sort by:</strong>

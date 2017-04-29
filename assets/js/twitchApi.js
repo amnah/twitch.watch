@@ -182,3 +182,9 @@ export function searchGames(query) {
         return data.games
     })
 }
+
+export function searchStreamsByGame(game, offset = 0) {
+    return getTwitch('streams', {game: game, limit: 100, offset: offset}).then(function(data) {
+        return data.streams
+    })
+}
