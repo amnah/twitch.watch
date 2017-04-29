@@ -40,7 +40,7 @@
                         [{{ stream.viewers }}] {{ stream.channel.display_name }}
                     </router-link>
                     <br/>
-                    <span class="game subgame action" @click="setGame(stream.game)">{{ stream.game.substring(0, 30) }}</span>
+                    <span class="game subgame action" @click="setGame(stream.game)">{{ stream.game.substring(0, 35) }}</span>
                 </li>
             </ul>
 

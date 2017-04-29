@@ -96,7 +96,6 @@ export default {
             return `-`
         },
         removeItem: function(username) {
-            console.log(`Removing item [ ${username} ]`)
             const items = removeHistoryItemByUsername(username)
             this.getItems(items)
         },
