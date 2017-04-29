@@ -32,7 +32,8 @@
                     <ul>
                         <li v-show="showChannel(channel)" v-for="(channel, game) in channels">
                             <router-link class="channel indented" :to="'/' + channel.name" :title="channel.title">
-                                <span title="current viewers">[{{ channel.current_viewers }}]</span> {{ channel.display_name }}
+                                <span :title="`${channel.current_viewers} current viewers`">[{{ channel.current_viewers }}]</span>
+                                {{ channel.display_name }}
                             </router-link>
                         </li>
                     </ul>
