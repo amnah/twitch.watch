@@ -18,7 +18,7 @@
         </div>
 
         <div class="sort-by">
-            <strong>&raquo; {{ displayGameTitle }}</strong>
+            <strong>&raquo; {{ displayGameTitle() }}</strong>
         </div>
 
         <div class="items scroll-list">
@@ -68,17 +68,6 @@ export default {
             streams: [],
         }
     },
-    computed: {
-        displayGameTitle: function() {
-            if (this.searchBy === 'query') {
-                return this.currentQuery ? `"${this.currentQuery}"` : 'please enter a query'
-            }
-            if (this.currentGame) {
-                return this.currentGame.name.substring(0, 50)
-            }
-            return 'top games'
-        }
-    },
     methods: {
         setSearchBy: function(by) {
             this.searchBy = by
@@ -93,39 +82,48 @@ export default {
             this.currentGame = game
         },
         displayStreamLogo: function(stream) {
+            // show channel logo or blanket 404 if user doesn't have one
+            // note: 50x50 seems to be the minimum on twitch's backend (change actual size via css)
             if (stream.channel.logo) {
-                // 50x50 seems to be the minimum. change actual size via css
                 return stream.channel.logo.replace('300x300', '50x50')
             }
             return `https://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_50x50.png`
+        },
+        displayGameTitle: function() {
+            if (this.searchBy === 'query') {
+                return this.currentQuery ? `query "${this.currentQuery}"` : 'please enter a query'
+            }
+            if (this.currentGame) {
+                return this.currentGame.name.substring(0, 50)
+            }
+            return this.currentQuery ? `top games "${this.currentQuery}"` : `top games`
+        },
+        cleanup: function() {
+            this.loading = false
+            this.lastRefresh = getDisplayTime()
+            this.$emit('resizeOverlay')
         },
         refresh: function() {
             if (this.searchBy === 'query') {
                 return this.getStreamsByQuery()
             }
-            if (this.currentGame) {
-                this.getStreamsByGame(this.currentGame)
-            } else {
-                this.getGameItems()
-            }
+            return this.currentGame ? this.getStreamsByGame(this.currentGame) : this.getGameItems()
         },
         getGameItems: function() {
             // allow user to load more if we're searching for top games
             // (searching for games by query doesn't have pagination)
             const vm = this
-            vm.loading = true
+            vm.streams = []
             vm.currentGame = null
+            vm.loading = true
 
             // make api based on whether or not we have a query
             const apiCall = vm.query ? searchGames(vm.query) : searchTopGames()
             apiCall.then(function(games) {
                 // format data (we get different data depending on 'searchGames' and 'searchTopGames'
                 vm.games = vm.formatGameData(games)
-                vm.streams = []
                 vm.currentQuery = vm.query
-                vm.loading = false
-                vm.lastRefresh = getDisplayTime()
-                vm.$emit('resizeOverlay')
+                vm.cleanup()
             })
         },
         getMoreGameItems: function() {
@@ -134,7 +132,7 @@ export default {
             searchTopGames(vm.games.length).then(function(games) {
                 games = vm.formatGameData(games)
                 vm.games = vm.games.concat(games)
-                vm.loading = false
+                vm.cleanup()
             })
         },
         formatGameData: function(games) {
@@ -155,9 +153,7 @@ export default {
             searchStreamsByGame(game.name).then(function(data) {
                 vm.streams = data
                 vm.currentQuery = vm.query
-                vm.loading = false
-                vm.lastRefresh = getDisplayTime()
-                vm.$emit('resizeOverlay')
+                vm.cleanup()
             })
         },
         getMoreStreamsByGame: function() {
@@ -165,9 +161,7 @@ export default {
             vm.loading = true
             searchStreamsByGame(vm.currentGame.name, vm.streams.length).then(function(data) {
                 vm.streams = vm.streams.concat(data)
-                vm.loading = false
-                vm.lastRefresh = getDisplayTime()
-                vm.$emit('resizeOverlay')
+                vm.cleanup()
             })
         },
         getStreamsByQuery: function() {
@@ -181,9 +175,7 @@ export default {
             searchStreamsByQuery(vm.query).then(function(data) {
                 vm.streams = data
                 vm.currentQuery = vm.query
-                vm.loading = false
-                vm.lastRefresh = getDisplayTime()
-                vm.$emit('resizeOverlay')
+                vm.cleanup()
             })
 
         },
@@ -196,9 +188,7 @@ export default {
             const offset = (vm.streams.length+100)-(vm.streams.length%100)
             searchStreamsByQuery(vm.currentQuery, offset).then(function(data) {
                 vm.streams = vm.streams.concat(data)
-                vm.loading = false
-                vm.lastRefresh = getDisplayTime()
-                vm.$emit('resizeOverlay')
+                vm.cleanup()
             })
 
         }
