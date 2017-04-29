@@ -6,6 +6,7 @@
             {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
+
         <form role="form" @submit.prevent="addFavorite()">
             <input placeholder="(twitch username)" v-model.trim="newUsername">
             <a class="action" @click="addFavorite()">add</a>

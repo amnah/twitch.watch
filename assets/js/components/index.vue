@@ -140,11 +140,9 @@ export default {
                 const $scrollListVisible = $(componentId).find('.scroll-list:visible')
                 if ($scrollListVisible.length) {
                     // calculate height based on the currently visible .scroll-list
-                    // then make adjustments based depending on the component (via eye-balling ...)
+                    // then make adjustments (via eye-balling ...)
                     let newHeight = $overlay.height() - $scrollListVisible.position().top
-                    if (componentId === '#srlive') {
-                        newHeight += 12
-                    }
+                    newHeight += 12
 
                     // adjust ALL .scroll-list elements in the page
                     $(componentId).find('.scroll-list').css('height', newHeight)

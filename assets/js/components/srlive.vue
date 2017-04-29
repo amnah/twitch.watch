@@ -1,11 +1,13 @@
 
 <template>
     <div id="srlive">
-        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
+
         <span class="last-refreshed action pull-right" title="last refreshed at" @click="getStreams()">
             {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
+
+        <input class="filter" placeholder="(filter)" v-model.trim="filter" @keyup="prepFilterForCompare">
 
         <div class="sort-by">
             <strong>Sort by:</strong>

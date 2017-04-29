@@ -148,8 +148,8 @@ html, body {
   cursor: pointer;
 }
 
-#favorites .items {
-  margin-top: 12px;
+#favorites form {
+  margin-bottom: 12px;
 }
 #add-favorite {
   margin-bottom: 6px;
@@ -159,15 +159,14 @@ html, body {
   margin-left: 0 !important;
 }
 
-#twitch .items {
-  margin-top: 12px;
-}
 #twitch .items .game {
   //height: 40px;
 }
 #twitch .game-viewers {
   float: left;
+  padding-right: 10px;
   width: 60px;
+  text-align: right;
 }
 
 #about {
