@@ -165,6 +165,16 @@ html, body {
 #twitch .scroll-list li {
   clear: both;
 }
+#twitch .logo {
+  float: left;
+  height: 45px;
+  margin: 0 10px 5px 0;
+}
+#twitch .viewers {
+  width: 55px;
+  padding-right: 5px;
+  text-align: right;
+}
 #twitch .game {
   display: inline-block;
   margin: 0;
@@ -172,17 +182,6 @@ html, body {
 #twitch .subgame {
   margin-left: 30px;
 }
-#twitch .viewers {
-  width: 55px;
-  padding-right: 5px;
-  text-align: right;
-}
-#twitch .channel img {
-  float: left;
-  height: 45px;
-  margin: 0 10px 5px 0;
-}
-
 #twitch .load-more {
   margin: 10px 0 0 75px;
 }

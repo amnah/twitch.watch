@@ -7,7 +7,7 @@
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
 
-        <form role="form" @submit.prevent="submit()">
+        <form role="form" @submit.prevent="submitQuery()">
             <input :placeholder="`(search ${searchBy})`" v-model.trim="query">
         </form>
 
@@ -25,23 +25,22 @@
             <!-- games -->
             <ul>
                 <li v-for="(game, i) in games">
-                    <div class="game viewers" :title="`${game.popularity} total viewers`">[{{ game.popularity }}]</div>
-                    <div class="game action" @click="setGame(game)">{{ game.name.substring(0, 40) }}</div>
+                    <div class="game action viewers" :title="`${game.name} - ${game.popularity} total viewers`" @click="setGame(game)">[{{ game.popularity }}]</div>
+                    <div class="game action" :title="`${game.name} - ${game.popularity} total viewers`" @click="setGame(game)">{{ game.name.substring(0, 40) }}</div>
                 </li>
             </ul>
 
             <!-- streams -->
             <ul>
                 <li v-for="(stream, i) in streams">
-                    <router-link class="channel" :to="'/' + stream.channel.name" :title="stream.channel.status">
-                        <img :src="displayStreamLogo(stream)">
-                        <div>
-                            <span :title="`${stream.viewers} current viewers`">[{{ stream.viewers }}]</span>
-                            {{ stream.channel.display_name }}<br/>
-                            <span class="game subgame">{{ stream.game.substring(0, 30) }}</span>
-                            </div>
+                    <router-link :to="'/' + stream.channel.name" :title="`${stream.channel.name} - ${stream.viewers} viewers \n\n${stream.channel.status}`">
+                        <img class="logo" :src="displayStreamLogo(stream)">
                     </router-link>
-
+                    <router-link class="channel" :to="'/' + stream.channel.name" :title="`${stream.channel.name} - ${stream.viewers} viewers \n\n${stream.channel.status}`">
+                        [{{ stream.viewers }}] {{ stream.channel.display_name }}
+                    </router-link>
+                    <br/>
+                    <span class="game subgame action" @click="setGame(stream.game)">{{ stream.game.substring(0, 30) }}</span>
                 </li>
             </ul>
 
@@ -81,7 +80,12 @@ export default {
             }
         },
         setGame: function(game) {
+            // create fake game object if we're passing in a string
+            if (!game.name) {
+                game = {name: game}
+            }
             this.getStreamsByGame(game)
+            this.searchBy = 'game'
             this.currentGame = game
         },
         displayStreamLogo: function(stream) {
@@ -106,7 +110,7 @@ export default {
             this.lastRefresh = getDisplayTime()
             this.$emit('resizeOverlay')
         },
-        submit: function() {
+        submitQuery: function() {
             this.currentGame = null
             this.refresh()
         },
