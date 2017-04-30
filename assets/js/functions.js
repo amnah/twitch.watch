@@ -91,6 +91,7 @@ export function groupArrayByField(array, field) {
     }
     return groupedItems
 }
+
 // --------------------------------------------------------
 // Filtering functions
 // --------------------------------------------------------
@@ -261,10 +262,28 @@ export function removeHistoryItemByUsername(username) {
         // unfavorite or remove from history
         if (items[userIndex].is_favorite) {
             items[userIndex].is_favorite = 0
+            console.log(`Removing item from favorites [ ${username} ]`)
         } else {
-            items.splice(userIndex, 1);
+            items.splice(userIndex, 1)
+            console.log(`Removing item from history (PERMANENT) [ ${username} ]`)
         }
         localStorage.setItem(localStorageKey, JSON.stringify(items))
     }
     return items
+}
+
+// --------------------------------------------------------
+// Config functions
+// --------------------------------------------------------
+export function getLocalStorageData() {
+    let data = {}
+    data[localStorageKey] = localStorage.getItem(localStorageKey)
+    return data
+}
+
+export function setLocalStorageData(data) {
+    console.log(data)
+    if (data[localStorageKey]) {
+        localStorage.setItem(localStorageKey, data[localStorageKey])
+    }
 }

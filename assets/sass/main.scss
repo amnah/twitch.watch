@@ -64,7 +64,7 @@ html, body {
 #overlay .error {
   margin-top: 20px;
   font-weight: bold;
-  color: #f0ad4e;
+  color: #f44336;
 }
 #overlay .action {
   margin-left: 10px;
@@ -195,4 +195,8 @@ html, body {
 #about a {
   text-decoration: underline;
 }
-
+#about .hiddenfile {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
