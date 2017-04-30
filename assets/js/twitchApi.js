@@ -50,7 +50,7 @@ export function getUserIds(usernames) {
         return $.when([])
     }
     return getTwitch('users', {login: usernames, limit: 100}).then(function(data) {
-        return arrayPluck(data.users, '_id')
+        return data.users.map(function(item) { return item._id })
     })
 }
 

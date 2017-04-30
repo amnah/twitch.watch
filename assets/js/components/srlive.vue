@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import {getDisplayTime, arrayPluck, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
+import {getDisplayTime, sortArray, groupArrayByField, prepStringForCompare} from '../functions.js'
 import {buildLiveData} from '../twitchApi.js'
 export default {
     name: 'srlive',
@@ -113,7 +113,7 @@ export default {
                 url: 'https://api.speedrunslive.com/frontend/streams'
             }).then(function(data) {
                 vm.srliveError = false
-                let usernames = arrayPluck(data._source.channels, 'name')
+                let usernames = data._source.channels.map(function(item) { return item.name })
                 return buildLiveData(usernames)
             }, function() {
                 vm.srliveError = true

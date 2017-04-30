@@ -29,14 +29,6 @@ export function getDisplayTime() {
     return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})
 }
 
-export function arrayPluck(array, field) {
-    const data = []
-    for (let i=0; i<array.length; i++) {
-        data.push(array[i][field])
-    }
-    return $.unique(data)
-}
-
 // sort by multiple fields
 // note: this is a beautiful function
 // @link http://stackoverflow.com/questions/6913512/how-to-sort-an-array-of-objects-by-multiple-fields/30446887#30446887
