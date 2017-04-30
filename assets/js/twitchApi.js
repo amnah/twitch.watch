@@ -1,5 +1,5 @@
 
-import {getConfig, arrayPluck} from './functions.js'
+import store from './store.js'
 
 // --------------------------------------------------------
 // Twitch settings and helper functions
@@ -11,7 +11,7 @@ const twitchVersion = 'v3'
 function twitchConfig() {
     return {
         headers: {
-            'Client-ID': getConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
+            'Client-ID': store.getters.appConfig('twitchClientId') || 'kiipiv740twqvx0haax8frqi5xtho3',
             'Accept': `application/vnd.twitchtv.${twitchVersion}+json`
         }
     }
@@ -29,7 +29,7 @@ function failureCallback(data) {
 }
 
 export function getTwitch(url, data) {
-    const params = $.extend(twitchConfig(), {
+    const params = Object.assign(twitchConfig(), {
         url: twitchUrl + url,
         method: 'GET',
         data: data
