@@ -252,13 +252,13 @@ export function removeHistoryItemByUsername(username) {
 // --------------------------------------------------------
 export function getLocalStorageData() {
     let data = {}
-    data[localStorageKey] = localStorage.getItem(localStorageKey)
+    data[localStorageKey] = JSON.parse(localStorage.getItem(localStorageKey))
     return data
 }
 
 export function setLocalStorageData(data) {
     console.log(data)
     if (data[localStorageKey]) {
-        localStorage.setItem(localStorageKey, data[localStorageKey])
+        localStorage.setItem(localStorageKey, JSON.stringify(data[localStorageKey]))
     }
 }
