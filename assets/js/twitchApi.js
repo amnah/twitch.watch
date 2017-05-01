@@ -160,7 +160,7 @@ export function buildLiveData(usernames) {
 export function addLiveData(items, liveData) {
     for (let i=0; i<items.length; i++) {
         const liveDataForUser = liveData[items[i].username]
-        items[i].game = liveDataForUser ? liveDataForUser.game : null
+        items[i].game = liveDataForUser ? liveDataForUser.game : '(offline)'
         items[i].viewers = liveDataForUser ? liveDataForUser.viewers : -1
         items[i].display_name = liveDataForUser ? liveDataForUser.display_name : null
         items[i].status = liveDataForUser ? liveDataForUser.status : null

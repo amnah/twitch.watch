@@ -14,9 +14,12 @@
 
         <div class="items scroll-list">
             <div v-for="(items, game) in favoriteItemsGrouped">
-                <div class="game">{{ game || '(No game set)' }}</div>
+                <div class="game">
+                    {{ game || '(No game set)' }}
+                    <a class="action" v-show="game == '(offline)'" @click="showOfflineFavorites = !showOfflineFavorites">show offline</a>
+                </div>
                 <ul>
-                    <li v-for="item in items">
+                    <li v-for="item in items" v-show="game != '(offline)' || showOfflineFavorites">
                         <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
                         <router-link class="channel indented" :to="'/' + item.username" :title="displayChannelTitle(item)">
                             {{ displayViewers(item) }} {{ item.display_name || item.username }}
@@ -54,6 +57,7 @@ export default {
             lastRefresh: '',
             favoriteItemsGrouped: {},
             historyItemsGrouped: {},
+            showOfflineFavorites: false,
             showHistory: false,
         }
     },
@@ -132,23 +136,25 @@ export default {
             })
         },
         processItems: function(favoriteItems, historyItems, liveData = {}) {
+
             // add liveData and group by game + sort
-            // note: offline streams will have a game of 'null', as specified in the `twitchApi.addLiveData()` function
-            //       we use that knowledge to rename/move those to the end of the object
             favoriteItems = addLiveData(favoriteItems, liveData).sort(sortArray(['game', '-viewers', 'username']))
             let favoriteItemsGrouped = groupArrayByField(favoriteItems, 'game')
-            favoriteItemsGrouped['(offline)'] = favoriteItemsGrouped[null]
-            delete favoriteItemsGrouped[null]
-            this.favoriteItemsGrouped = favoriteItemsGrouped
-
-            // add liveData and group by game + sort
             historyItems = addLiveData(historyItems, liveData).sort(sortArray(['game', '-viewers', '-last_viewed', 'username']))
             let historyItemsGrouped = groupArrayByField(historyItems, 'game')
-            historyItemsGrouped['(offline)'] = historyItemsGrouped[null]
-            delete historyItemsGrouped[null]
-            this.historyItemsGrouped = historyItemsGrouped
 
-            // update meta
+            // move offline to end of object so they appear last
+            const offlineKey = '(offline)'
+            let tmpOfflineItems = favoriteItemsGrouped[offlineKey]
+            delete favoriteItemsGrouped[offlineKey]
+            favoriteItemsGrouped[offlineKey] = tmpOfflineItems
+            tmpOfflineItems = historyItemsGrouped[offlineKey]
+            delete historyItemsGrouped[offlineKey]
+            historyItemsGrouped[offlineKey] = tmpOfflineItems
+
+            // update data
+            this.favoriteItemsGrouped = favoriteItemsGrouped
+            this.historyItemsGrouped = historyItemsGrouped
             this.loading = false
             this.lastRefresh = getDisplayTime()
             this.$emit('resizeOverlay')
