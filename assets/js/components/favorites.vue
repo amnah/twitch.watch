@@ -20,7 +20,7 @@
                 </div>
                 <ul>
                     <li v-for="item in items" v-show="game != '(offline)' || showOfflineFavorites">
-                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username)"></span>
+                        <span class="action danger glyphicon glyphicon-remove pull-right" aria-hidden="true" :title="`remove [${item.username}] from favorites`" @click="removeItem(item.username, true)"></span>
                         <router-link class="channel indented" :to="'/' + item.username" :title="displayChannelTitle(item)">
                             {{ displayViewers(item) }} {{ item.display_name || item.username }}
                         </router-link>
@@ -99,9 +99,30 @@ export default {
             }
             return `-`
         },
-        removeItem: function(username) {
+        removeItem: function(username, refreshTwitch) {
+            // remove item from the localStorage
+            // note: favorite items will be moved to history. history items will be removed permanently
             const items = removeHistoryItemByUsername(username)
-            this.getItems(items)
+
+            // refresh data from twitch (for favorites)
+            // otherwise just remove the item (for history)
+            if (refreshTwitch) {
+                return this.getItems(items)
+            }
+
+            // iterate through and remove the item
+            for (let key in this.historyItemsGrouped) {
+                let items = this.historyItemsGrouped[key]
+                for (let i=0; i<items.length; i++) {
+                    if (items[i].username === username) {
+                        items.splice(i, 1)
+                        if (!items.length) {
+                            delete this.historyItemsGrouped[key]
+                        }
+                        return
+                    }
+                }
+            }
         },
         refresh: function() {
             this.getItems()

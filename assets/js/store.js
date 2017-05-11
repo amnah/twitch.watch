@@ -29,9 +29,6 @@ const mutations = {
     appConfig(state, appConfig) {
         state.appConfig = appConfig
     },
-    updateAppConfig(state, data) {
-        state.appConfig = Object.assign({}, state.appConfig, data)
-    },
     user(state, user) {
         state.user = user
     },
