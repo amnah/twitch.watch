@@ -7,6 +7,7 @@
         <div id="overlay">
             <div id="currently-watching">
                 {{ username || '(no stream)' }}
+                <a v-show="username" class="action" @click="openChat(username)">chat</a>
                 <a v-show="username" class="action" @click="closeStream()">close</a>
             </div>
 
@@ -151,6 +152,9 @@ export default {
         },
         setPage: function(page) {
             this.currentPage = page
+        },
+        openChat: function(username) {
+            window.open(`https://twitch.tv/${username}/chat`, '', 'resizable,height=600,width=400')
         },
         closeStream: function() {
             this.$router.push('/')
