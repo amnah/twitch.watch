@@ -121,8 +121,11 @@ export default {
         refresh: function() {
             if (this.searchBy === 'query') {
                 return this.getStreamsByQuery()
+            } else if (this.currentGame) {
+                return this.getStreamsByGame(this.currentGame)
+            } else {
+                return this.getGameItems()
             }
-            return this.currentGame ? this.getStreamsByGame(this.currentGame) : this.getGameItems()
         },
         getGameItems: function() {
             // allow user to load more if we're searching for top games
@@ -135,6 +138,12 @@ export default {
             // make api based on whether or not we have a query
             const apiCall = vm.query ? searchGames(vm.query) : searchTopGames()
             apiCall.then(function(games) {
+                // get streams directly if there is only one game
+                if (games.length === 1) {
+                    vm.currentGame = games[0]
+                    return vm.getStreamsByGame(vm.currentGame)
+                }
+
                 // format data (we get different data depending on 'searchGames' and 'searchTopGames'
                 vm.games = vm.formatGameData(games)
                 vm.currentQuery = vm.query
