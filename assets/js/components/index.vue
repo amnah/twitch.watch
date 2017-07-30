@@ -57,7 +57,8 @@ export default {
             player: null,
             username: '',
             pages: pages,
-            currentPage: startPage
+            currentPage: startPage,
+            refreshInterval: null
         }
     },
     mounted: function() {
@@ -85,6 +86,7 @@ export default {
         }
 
         vm.refreshPage()
+        vm.setRefreshInterval()
     },
     watch: {
         $route: function(newRoute, oldRoute) {
@@ -104,6 +106,7 @@ export default {
         },
         currentPage: function(val) {
             this.refreshPage()
+            this.setRefreshInterval()
         }
     },
     methods: {
@@ -112,6 +115,14 @@ export default {
             if (vm.$refs[vm.currentPage] && vm.$refs[vm.currentPage].refresh) {
                 vm.$refs[vm.currentPage].refresh()
             }
+        },
+        setRefreshInterval: function() {
+            const vm = this
+            const refreshMinutes = 15
+            clearInterval(vm.refreshInterval)
+            vm.refreshInterval = setInterval(function() {
+                vm.refreshPage()
+            }, refreshMinutes*60*1000)
         },
         toggleMenu: function() {
             // hide overlay

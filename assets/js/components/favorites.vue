@@ -2,7 +2,7 @@
 <template>
     <div id="favorites">
 
-        <span class="last-refreshed action pull-right" title="last refreshed at" @click="getItems()">
+        <span class="last-refreshed action pull-right" title="last refreshed at (automatic every 15 minutes)" @click="getItems()">
             {{ loading ? '...' : '' }} {{ lastRefresh }}
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </span>
