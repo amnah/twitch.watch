@@ -32,7 +32,7 @@
 
             <!-- streams -->
             <ul>
-                <li v-for="(stream, i) in streams">
+                <li v-for="(stream, i) in streams" v-if="stream.video_height>=720">
                     <router-link :to="'/' + stream.channel.name" :title="`${stream.channel.name} - ${stream.viewers} viewers \n\n${stream.channel.status}`">
                         <img class="logo" :src="displayStreamLogo(stream)">
                     </router-link>
@@ -40,7 +40,7 @@
                         [{{ stream.viewers }}] {{ stream.channel.display_name }}
                     </router-link>
                     <br/>
-                    <span class="game subgame">{{ stream.game.substring(0, 35) }}</span>
+                    <span class="game subgame">{{ !currentGame ? stream.game.substring(0, 15) + ' - ' + stream.channel.status.substring(0, 15) : stream.channel.status.substring(0, 30) }}</span>
                 </li>
             </ul>
 
